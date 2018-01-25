@@ -13,7 +13,11 @@ class Index extends common\controller\Base
 //        echo 1;
 //        $res = Db::query('select * from lmm_use');
 //        var_dump($res);
-
+//        $res = db('sp')->where(array('id'=>1))->find();
+//        var_dump($res);
+        $bc = 2;
+        $res = objSetArray($bc);
+        var_dump($res);
 
     }
 
@@ -63,6 +67,15 @@ class Index extends common\controller\Base
         //M方法
 //        $res = db('lmm_user')->where('id',1)->find();
 //        var_dump($res);
+    }
+
+    public function sysvar(){ //系统常量
+        $module = request()->module();
+        $controller = request()->controller();
+        $action = request()->action();
+        echo $module."<br/>";
+        echo $controller."<br/>";
+        echo $action."<br/>";
     }
 
 }
