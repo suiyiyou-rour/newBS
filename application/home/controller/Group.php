@@ -4,32 +4,42 @@
  */
 namespace app\home\controller;
 use app\common;
-
-class Group extends common\controller\Base
+use think\Request;
+//use \think\Validate;
+class Group extends common\controller\HomeBase
 {
     public function __construct()
     {
         parent::__construct();
-        header('Access-Control-Allow-Origin:*');
-        header("Access-Control-Allow-Methods", "GET,POST");
-        header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        if(!IS_WIN){
+            header('Access-Control-Allow-Origin:*');
+            header("Access-Control-Allow-Methods", "GET,POST");
+            header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        }
     }
 
     public function index()
     {
-        echo "home/group/index" . "<br/>";
-        echo getGoodsCode();
 
+    }
+
+    //显示合同
+    public function showPact(){
+        $res = db('contact')->field('code,name,rate')->where(array('sp_code' => 1))->select();
+        if(!$res){
+            echo json_encode(array("code" => 304,"msg" => "合同加载错误"));
+            return ;
+        }
+        echo json_encode(array("code" => 200,"data" => $res));
     }
 
     //添加产品
     public function addgoods()
     {
-        $state = input('post.state');
-        echo 1;
-        die;
+        $state = input('state');
         if(!$state){
-            $state = 0;
+//            $state = 0;
+            return;
         }
         switch ($state) {
             case 0:
@@ -69,8 +79,36 @@ class Group extends common\controller\Base
     //基本信息添加
     private function addBasicInfo()
     {
-        echo json_encode(array("code" => 200,"data" => "addBasicInfo"));
-        return;
+        $gain = [
+            'contact_code',
+            'inside_code',
+            'inside_title',
+            'subtitle',
+            'service_type',
+            'line_type',
+            'play_type',
+            'begin_address',
+            'end_address',
+            'main_place',
+            'advance_time',
+            'online_type',
+            'on_time',
+            'off_time' ,
+            'service_tel',
+            'refund_type',
+            'refund_info',
+            'rate'];
+
+        $data = Request::instance()->only($gain,'post');
+//        $data = input('post.');
+
+        $result = $this->validate($data,'Group.addBasicInfo');
+        if(true !== $result){
+            // 验证失败 输出错误信息
+            echo json_encode(array("code" => 403,"msg" => $result));
+            return;
+        }
+        echo json_encode(array("code" => 200,"msg" => $result));
     }
 
     //行程信息添加

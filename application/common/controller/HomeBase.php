@@ -1,16 +1,12 @@
 <?php
 namespace app\common\controller;
-use think\Controller;
 /**
- * 基类
+ * home模块基类
  */
-class Base extends Controller
+class HomeBase extends Base
 {
     public function __construct()
     {
         parent::__construct();
     }
-
-
-
 }
