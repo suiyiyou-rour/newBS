@@ -19,7 +19,7 @@ class Group extends Validate
         'on_time'           =>  'max:11|number',//上线时间     （主）
         'off_time'          =>  'max:11|number',//下线时间     （主）
         'service_tel'       =>  'max:128',//客服电话     （副）
-        'refund_type'       =>  'require|max:1',//退款类型     （副）必须
+        'refund_type'       =>  'require|max:1|number',//退款类型     （副）必须
 //        'refund_info'       =>  '',//梯度详细退款     （副）
         'rate'               =>  'require|max:3',//产品费率     （主）必须
     ];
@@ -54,6 +54,7 @@ class Group extends Validate
         'service_tel.max'       => '客服电话不能超过128个字符',
         'refund_type.require'   => '退款类型是必须的',
         'refund_type.max'       => '退款类型格式错误',
+        'refund_type.number'    => '退款类型格式错误',
         'rate.require'          => '产品费率是必须的',
         'rate.max'              => '产品费率格式错误',
     ];
