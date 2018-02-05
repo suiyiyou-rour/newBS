@@ -26,7 +26,7 @@ function createGoodsCode($type = "x")
 /**
  * 防止表单重复提交hash值
  */
-function getHash(){
+function getFromHash(){
     $str = getSpId() .mt_rand(100000,999999);
     $hash = md5($str);
     $array = array("count" => 0,"code" => $hash);
@@ -35,7 +35,7 @@ function getHash(){
     return $hash;
 }
 
-function checkHash($data){
+function checkFromHash($data){
     $hash = cookie('hash');
     if(!$hash){
         $array = array("count" => 1,"code" => $data);
@@ -53,7 +53,7 @@ function checkHash($data){
 /**
  * 跟团page1测试参数
  */
-function testGroupPage1(){
+function testGroupPage0(){
     //主表添加数据
     $data["contact_code"] = "12345678"; //合同编码  （主）必须
     $data["inside_code"] = "2" ;//内部编号   （主）
@@ -63,7 +63,7 @@ function testGroupPage1(){
     $data["online_type"] = "1"; //上线类型   (主)必须
     $data["on_time"] = ""; //上线时间     （主）
     $data["off_time"] = ""; //下线时间     （主）
-    $data["rate"] = "2"; //产品费率     （主）必须
+    $data["rate"] = "21111"; //产品费率     （主）必须
 
     //副表添加数据
     $data["service_type"] = "json"; //服务保障      （副）
@@ -76,5 +76,17 @@ function testGroupPage1(){
     $data["refund_type"] = "1"; //退款类型     （副）必须
     $data["refund_info"] = "json";//梯度详细退款     （副）
 
+    return $data;
+}
+
+function testGroupPage1(){
+    //副表添加数据
+    $data["play_day"] = "2";//行程天数  int长度3  必须
+    $data["go_trans"] = "2";//交通方式（去） int长度2  必须
+    $data["back_trans"] = "2";//交通方式（回） int长度2  必须
+    $data["go_trans_cost"] = "111";//交通费用说明（去） varchar长度256
+    $data["back_trans_cost"] = "111";//交通费用说明（回） varchar长度256
+    $data["gather_place"] = "json";//集合地点    必须
+    $data["route_info"] = "json";//行程详细  必须
     return $data;
 }

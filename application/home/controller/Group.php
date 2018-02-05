@@ -5,7 +5,6 @@
 namespace app\home\controller;
 use app\common;
 use think\Request;
-use think\Session;
 //use \think\Validate;
 class Group extends common\controller\HomeBase
 {
@@ -17,25 +16,13 @@ class Group extends common\controller\HomeBase
 
     public function index()
     {
-//        echo getHash();
-        var_dump(checkHash("927d13527349b5de1fbbacd57fa5b0e9"));
-//        var_dump(cookie('hash')) ;
+         \think\Loader::model('Goods','logic')->index();
     }
 
-    //显示合同
-    public function showPact(){
-        $res = db('contact')->field('code,name,rate')->where(array('sp_code' => 1))->select();
-        if(!$res){
-            echo json_encode(array("code" => 405,"msg" => "合同加载错误"));
-            return ;
-        }
-        echo json_encode(array("code" => 200,"data" => $res));
-    }
 
     //添加产品
     public function addgoods()
     {
-
         $state = input('state');
         if($state == null || $state == ""){
             echo json_encode(array("code" => 404,"msg" => "参数错误404"));
@@ -47,6 +34,8 @@ class Group extends common\controller\HomeBase
                 $this->addBasicInfo();
                 break;
             case '1':
+                //行程信息添加
+                $this->addRouteInfo();
                 break;
             case '2':
                 break;
@@ -77,6 +66,7 @@ class Group extends common\controller\HomeBase
                 $this->showBasicInfo();
                 break;
             case '1':
+                $this->showRouteInfo();
                 break;
             case '2':
                 break;
@@ -96,25 +86,53 @@ class Group extends common\controller\HomeBase
 
     }
 
-    //获取新添加的产品编号
-    private function addGetCode()
-    {
-        $data = getGoodsCode();
-        echo json_encode(array("code" => 200,"data" => $data));
-        return ;
+    //显示选项
+    public function showOption(){
+        $state = input('state');
+        if($state == null || $state == ""){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
+        }
+        switch ($state) {
+            case '0':
+                $this->optionPact();
+                break;
+            case '1':
+                $this->OptionBasicInfo();
+                break;
+            case '2':
+                break;
+            case '3':
+                break;
+            case '4':
+                break;
+            case '5':
+                break;
+            case '6':
+                break;
+            case '7':
+                break;
+            default:
+                echo json_encode(array("code" => 404,"msg" => "参数错误"));
+        }
     }
 
     //基本信息添加
     private function addBasicInfo()
     {
+        $hash = input('post.hash');
+        if(!checkFromHash($hash)){
+            echo json_encode(array("code" => 405,"msg" => "您表单提交速度过快，请3秒后重试。"));
+            return;
+        }
         //数据验证
         $gain = ['contact_code', 'inside_code', 'inside_title', 'subtitle', 'service_type', 'line_type', 'play_type', 'begin_address', 'end_address', 'main_place', 'advance_time', 'online_type', 'on_time', 'off_time' , 'service_tel', 'refund_type', 'refund_info', 'rate'];
         $data = Request::instance()->only($gain,'post');//        $data = input('post.');
+//        $data = testGroupPage0();//测试参数
         $data["service_type"]      =   json_encode($data["service_type"]); //服务保障      （副）
         $data["main_place"]        =   json_encode($data["main_place"]); //主要景点     （副）必须
         $data["service_tel"]       =   json_encode($data["service_tel"]); //客服电话     （副）
         $data["refund_info"]       =   json_encode($data["refund_info"]);//梯度详细退款     （副）
-//        $data = testGroupPage1();//测试参数
         $result = $this->validate($data,'Group.addBasicInfo');
         if(true !== $result){
             // 验证失败 输出错误信息
@@ -154,8 +172,9 @@ class Group extends common\controller\HomeBase
         $goodsRes = db('goods')->insert($goodsData);
         $groupRes = db('goods_group')->insert($groupData);
         $supplyRes = db('goods_supply')->insert($supplyData);
+        db('goods_create')->insert(array('goods_code' => $goodsCode,"tab" => 0));
         if($goodsRes && $groupRes && $supplyRes){
-            echo json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
+            echo json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode,"tab" => 1)));
         }else {
             echo json_encode(array("code" => 403,"msg" => "数据保存出错，请再试一次"));
         }
@@ -166,6 +185,30 @@ class Group extends common\controller\HomeBase
     //行程信息添加
     private function addRouteInfo()
     {
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            echo json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
+            return ;
+        }
+        //数据验证
+        $gain = ['play_day','go_trans','back_trans','go_trans_cost','back_trans_cost','gather_place','route_info'];
+        $data = Request::instance()->only($gain,'post');//        $data = input('post.');
+        $data["gather_place"]      =   json_encode($data["gather_place"]); //集合地点
+        $data["route_info"]        =   json_encode($data["route_info"]); //行程详细
+//        $data = testGroupPage1();//测试参数
+        $result = $this->validate($data,'Group.addRouteInfo');
+        if(true !== $result){
+            // 验证失败 输出错误信息
+            echo json_encode(array("code" => 405,"msg" => $result));
+            return;
+        }
+        $groupRes = db('goods_group')->insert($data);
+        db('goods_create')->insert(array('goods_code' => $goodsCode,"tab" => 1));
+        if($groupRes){
+            echo json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode,"tab" => 2)));
+        }else {
+            echo json_encode(array("code" => 403,"msg" => "数据保存出错，请再试一次"));
+        }
 
     }
 
@@ -207,14 +250,69 @@ class Group extends common\controller\HomeBase
 
     //显示首页
     private function showBasicInfo(){
-        //
+        $goodsCode = input('post.goodsCode');
+        if($goodsCode){//有商品code 查询
+            $goodsField = "a.contact_code,a.inside_code,a.inside_title,a.subtitle,a.advance_time,a.online_type,a.on_time,a.off_time,a.rate";
+            $groupField = "b.service_type,b.line_type,b.play_type,b.begin_address,b.end_address,b.main_place,b.service_tel,b.refund_type,b.refund_info";
+            $allField = $goodsField.','.$groupField;
+            $alias = array("syy_goods" => "a","syy_goods_group" => "b");
+            $join = [['syy_goods_group','a.code = b.goods_code']];
+            $where = array("a.code" => $goodsCode);
+            $data = db('goods')->alias($alias)->join($join)->field($allField)->where($where)->find();
+            if(!$data){
+                echo json_encode(array("code" => 403,"msg" => "数据库查询出错吗，请联系管理员"));
+                return;
+            }
+            $data["service_type"]      =   json_decode($data["service_type"]); //服务保障      （副）
+            $data["main_place"]        =   json_decode($data["main_place"]); //主要景点     （副）必须
+            $data["service_tel"]       =   json_decode($data["service_tel"]); //客服电话     （副）
+            $data["refund_info"]       =   json_decode($data["refund_info"]);//梯度详细退款     （副）
+
+            $data["state"] = '0';
+            echo json_encode(array("code" => 200,"data" => $data));
+            return;
+
+        }else{//没有商品code
+            //有未填完信息
+            //没有未填完
+        }
+
+    }
+
+    //显示行程信息
+    private function showRouteInfo(){
+
+    }
+
+
+
+
+
+    //显示基本信息选项（合同）
+    private function optionPact(){
         $contact = db('contact')->field('code,name,rate')->where(array('sp_code' => 1))->select();
         if(!$contact){
-            echo json_encode(array("code" => 405,"msg" => "合同加载错误"));
+            echo json_encode(array("code" => 405,"msg" => "合同加载错误,请刷新页面"));
             return ;
         }
-        $date["contact"] = $contact;
-        $date["hash"] = getHash();
-        echo json_encode(array("code" => 200,"data" => $date));
+        $data["contact"] = $contact;
+        $data["hash"] = getFromHash();
+        echo json_encode(array("code" => 200,"data" => $data));
+    }
+
+    //显示行程信息选项
+    private function optionBasicInfo(){
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            echo json_encode(array("code" => 404,"msg" => "查询商品号不能为空"));
+            return ;
+        }
+        $address = db('goods_group')->field('begin_address,main_place')->where(array('goods_code' => $goodsCode))->find();
+        if(!$address){
+            echo json_encode(array("code" => 405,"msg" => "查询错误,请刷新页面"));
+            return ;
+        }
+        $address["main_place"] = json_decode($address["main_place"]);
+        echo json_encode(array("code" => 200,"data" => $address));
     }
 }
