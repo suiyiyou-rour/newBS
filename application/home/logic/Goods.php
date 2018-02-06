@@ -3,33 +3,38 @@
  * 产品添加 状态分发
  */
 namespace app\home\logic;
-use think\Request;
-use think\Validate;
+
 class Goods
 {
-
-    public function __construct(){
-
+    /**
+     * 产品模块分发
+     */
+    public function dispatcher($goodsType,$operation,$state){
+        $array = array('group','ticket','scenery');
+        if(in_array($goodsType,$array)){
+            return $this->$goodsType($operation,$state);
+        }else{
+            return json_encode(array("code" => 404,"msg" => "参数错误"));
+        }
     }
 
-    public function index(){
-
- //        $gain = ['contact_code', 'inside_code', 'inside_title', 'subtitle', 'service_type', 'line_type', 'play_type', 'begin_address', 'end_address', 'main_place', 'advance_time', 'online_type', 'on_time', 'off_time' , 'service_tel', 'refund_type', 'refund_info', 'rate'];
-//        $data = Request::instance()->only($gain,'post');//        $data = input('post.');
-        $data = testGroupPage0();//测试参数
-        $data["service_type"]      =   json_encode($data["service_type"]); //服务保障      （副）
-        $data["main_place"]        =   json_encode($data["main_place"]); //主要景点     （副）必须
-        $data["service_tel"]       =   json_encode($data["service_tel"]); //客服电话     （副）
-        $data["refund_info"]       =   json_encode($data["refund_info"]);//梯度详细退款     （副）
-
-
-        $validate = new \app\home\validate\Group();
-        $result = $validate->scene('addBasicInfo')->check($data);
-
-        if(true !== $result){
-            // 验证失败 输出错误信息
-            echo $validate->getError();
-            return;
+    //跟团游 操作分发
+    public function group($operation,$state){
+        $array = array('Add','Show','Option');
+        if(in_array($operation,$array)){
+            return \think\Loader::model($operation.'Group','logic')->dispatcher($state);
+        }else{
+            return json_encode(array("code" => 404,"msg" => "参数错误"));
         }
+    }
+
+    //门票
+    public function ticket($operation,$state){
+        return 2;
+    }
+
+    //酒景
+    public function scenery($operation,$state){
+        return 3;
     }
 }

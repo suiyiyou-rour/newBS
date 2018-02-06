@@ -14,9 +14,72 @@ class Group extends common\controller\HomeBase
 
     }
 
+    public function add(){
+        $state = input('state');
+        if($state == null || $state == ""){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
+        }
+        $res =  \think\Loader::model('Goods','logic')->dispatcher("group","Add",$state);
+        echo $res;
+    }
+
+    public function show(){
+        $state = input('state');
+        if($state == null || $state == ""){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
+        }
+        $res =  \think\Loader::model('Goods','logic')->dispatcher("group","Show",$state);
+        echo $res;
+    }
+
+    public function option(){
+        $state = input('state');
+        if($state == null || $state == ""){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
+        }
+        $res =  \think\Loader::model('Goods','logic')->dispatcher("group","Option",$state);
+        echo $res;
+    }
+
+
+
     public function index()
     {
-         \think\Loader::model('Goods','logic')->index();
+        $goodsCode = "g001691898";
+        $goodsField = "a.contact_code,a.inside_code,a.inside_title,a.subtitle,a.advance_time,a.online_type,a.on_time,a.off_time,a.rate";
+        $groupField = "b.service_type,b.line_type,b.play_type,b.begin_address,b.end_address,b.main_place,b.service_tel,b.refund_type,b.refund_info";
+        $allField = $goodsField.','.$groupField;
+        $alias = array("syy_goods" => "a","syy_goods_group" => "b");
+        $join = [['syy_goods_group','a.code = b.goods_code']];
+        $where = [
+            "a.code"        => $goodsCode,
+            'a.is_del'      =>  ['<>',"1"]  //未删除
+        ];
+        $data = db('goods')->alias($alias)->join($join)->field($allField)->where($where)->find();
+        if(!$data){
+            return json_encode(array("code" => 403,"msg" => "商品不存在或者商品被删除，请联系管理员"));
+        }
+        $data["service_type"]      =   json_decode($data["service_type"]); //服务保障      （副）
+        $data["main_place"]        =   json_decode($data["main_place"]); //主要景点     （副）必须
+        $data["service_tel"]       =   json_decode($data["service_tel"]); //客服电话     （副）
+        $data["refund_info"]       =   json_decode($data["refund_info"]);//梯度详细退款     （副）
+
+        $data["state"] = '0';
+
+        var_dump($data);
+        die;
+        $goodsCode = input('post.goodsCode');
+        $goodsField = "a.inside_title";
+        $groupField = "b.";
+        $allField = $goodsField.','.$groupField;
+        $alias = array("syy_goods" => "a","syy_goods_create" => "b");
+        $join = [['syy_goods_group','a.code = b.goods_code']];
+        $where = array("a.code" => $goodsCode);
+        $data = db('goods')->alias($alias)->join($join)->field($allField)->where($where)->find();
+        var_dump($data);
     }
 
 

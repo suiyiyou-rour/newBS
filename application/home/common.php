@@ -63,7 +63,7 @@ function testGroupPage0(){
     $data["online_type"] = "1"; //上线类型   (主)必须
     $data["on_time"] = ""; //上线时间     （主）
     $data["off_time"] = ""; //下线时间     （主）
-    $data["rate"] = "21111"; //产品费率     （主）必须
+    $data["rate"] = "2"; //产品费率     （主）必须
 
     //副表添加数据
     $data["service_type"] = "json"; //服务保障      （副）
