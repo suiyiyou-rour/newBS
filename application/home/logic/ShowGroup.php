@@ -38,6 +38,16 @@ class ShowGroup
         }
     }
 
+    /**
+     * todo
+     * todo tab规则  0  1  2  3  4  5  6  7
+     * todo 必须     1  1  1  0  1  0  0  1
+     * todo 页码写入 0  1  3     6        7
+     * todo 数据显示判断（页码） tab 1 2 4 7
+     * todo 空值判断 3 5 6
+     *
+     */
+
     //基本信息
     public function basicInfo()
     {
@@ -64,6 +74,7 @@ class ShowGroup
 
             $data["state"] = '0';
             $data["tab"] = $this->getGoodsTab($goodsCode);
+            $data["goodsCode"] = $goodsCode;
             return json_encode(array("code" => 200,"data" => $data));
 
         }else{//没有商品code
@@ -114,12 +125,13 @@ class ShowGroup
         if(!$groupInfo){
             return json_encode(array("code" => 403,"msg" => "商品不存在或者商品被删除，请联系管理员"));
         }else{
-            $groupInfo["tab"] = $tab;
             $groupInfo["gather_place"]      =   json_decode($groupInfo["gather_place"]); //集合地点
             $groupInfo["route_info"]        =   json_decode($groupInfo["route_info"]); //行程详细
             $groupInfo["go_trans"]          =   (int)$groupInfo["go_trans"];
             $groupInfo["back_trans"]        =   (int)$groupInfo["back_trans"];
             $groupInfo["state"] = '1';
+            $groupInfo["tab"] = $tab;
+            $groupInfo["goodsCode"] = $goodsCode;
             return json_encode(array("code" => 200,"data" => $groupInfo));
         }
 
@@ -162,7 +174,8 @@ class ShowGroup
             $output["fileList"][] = $newArray;
         }
         $output["state"] = '2';
-        $output["tab"] = $this->getGoodsTab($goodsCode);
+        $output["tab"] = $tab;
+        $output["goodsCode"] = $goodsCode;
         return json_encode(array("code" => 200,"data" => $output));
 
     }
@@ -175,12 +188,12 @@ class ShowGroup
             return json_encode(array("code" => 404,"msg" => "商品号不能为空"));
         }
         $tab = $this->getGoodsTab($goodsCode);
+
         $data = db('goods_group')->field("charged_item")->where(array("goods_code"=> $goodsCode))->find();
 
-        $output["state"] = '3';
-        $output["tab"] = $tab;
+
         if(empty($data["charged_item"])){
-            return json_encode(array("code" => 201,"data" => $output));
+            return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
         }
         $array = json_decode($data["charged_item"],true);
         if(!is_array($array)){
@@ -190,6 +203,9 @@ class ShowGroup
             $k["place"] = (float)$k["place"];
         }
         $output["charged_item"] = $array;
+        $output["state"]         = '3';
+        $output["tab"]            = $tab;
+        $output["goodsCode"]    = $goodsCode;
         return json_encode(array("code" => 200,"data" => $output));
 
 
@@ -203,6 +219,9 @@ class ShowGroup
             return json_encode(array("code" => 404,"msg" => "商品号不能为空"));
         }
         $tab = $this->getGoodsTab($goodsCode);
+        if($tab < 4){
+            return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
+        }
         $field = 'little_traffic,stay,food_server,tick_server,guide_server,safe_server,child_price_type,child_price_info,child_price_supply,give_info';
         $data = db('goods_group')->field($field)->where(array("goods_code"=> $goodsCode))->find();
         if(empty($data)){
@@ -212,7 +231,8 @@ class ShowGroup
         $data["tick_server"]             =   json_decode($data["tick_server"]); //门票
         $data["child_price_info"]        =   json_decode($data["child_price_info"]); //儿童价说明
         $data["tab"] = $tab;
-        $data["state"] = 4;
+        $data["state"] = '4';
+        $data["goodsCode"]    = $goodsCode;
         return json_encode(array("code" => 200,"data" => $data));
 
 
@@ -221,7 +241,25 @@ class ShowGroup
     //费用不包含
     public function notInCost()
     {
-        return "notInCost";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "商品号不能为空"));
+        }
+        $tab = $this->getGoodsTab($goodsCode);
+
+        $data = db('goods_group')->field("cost_not_include")->where(array("goods_code"=> $goodsCode))->find();
+
+        if(empty($data["cost_not_include"])){
+            return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
+        }
+        $output["state"]       = '5';
+        $output["tab"]         = $tab;
+        $data["goodsCode"]    = $goodsCode;
+        $output["cost_not_include"] = json_decode($data["cost_not_include"]);
+
+        return json_encode(array("code" => 200,"data" => $output));
+
+
     }
 
     //特殊人群限制
