@@ -13,6 +13,15 @@ function getSpId(){
 }
 
 /**
+ * 获取商户code
+ * 填充至3位
+ */
+function getSpCode(){
+    $code = session("sp.code");
+    return $code;
+}
+
+/**
  * 生成随机商品code
  * @return string
  */
@@ -35,6 +44,9 @@ function getFromHash(){
     return $hash;
 }
 
+/**
+ * 验证hash值
+ */
 function checkFromHash($data){
     $hash = cookie('hash');
     if(!$hash){
@@ -50,8 +62,9 @@ function checkFromHash($data){
     return 1;
 }
 
+
 /**
- * 跟团page1测试参数
+ * 跟团page0测试参数
  */
 function testGroupPage0(){
     //主表添加数据
@@ -79,6 +92,9 @@ function testGroupPage0(){
     return $data;
 }
 
+/**
+ * 跟团page1测试参数
+ */
 function testGroupPage1(){
     //副表添加数据
     $data["play_day"] = "2";//行程天数  int长度3  必须

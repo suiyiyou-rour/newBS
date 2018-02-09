@@ -80,7 +80,24 @@ class OptionGroup
     //费用包含
     public function includeCost()
     {
-        return "includeCost";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "查询商品号不能为空"));
+        }
+        $address = db('goods_group')->field('main_place')->where(array('goods_code' => $goodsCode))->find();
+        if(!$address){
+            return json_encode(array("code" => 405,"msg" => "查询产品不存在或者被删除或者不在制作中或者本商品不属于您，请联系管理员"));
+        }
+        $address = json_decode($address["main_place"],true);
+        $output = array();
+        foreach ($address as $k){
+            $array = [
+                "bool"   => 0,
+                "name" => $k["place"]
+            ];
+            $output[] = $array;
+        }
+        return json_encode(array("code" => 200,"data" => $output));
     }
 
     //费用不包含

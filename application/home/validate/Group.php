@@ -34,6 +34,20 @@ class Group extends Validate
         'gather_place'      =>  'require',//集合地点    （副）必须
         'route_info'        =>  'require',//行程详细  （副）必须
 
+
+        //费用包含
+//        'little_traffic' =>  'require|number|max:3',//景区小交通  int长度1
+//        'stay'   ,
+//        'food_server',
+//        'tick_server',
+//        'guide_server',
+//        'safe_server',
+//        'child_price_type',
+//        'child_price_info',
+//        'child_price_supply',
+//        'give_info'
+
+
     ];
 
     //反馈信息

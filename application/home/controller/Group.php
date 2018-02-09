@@ -14,6 +14,28 @@ class Group extends common\controller\HomeBase
 
     }
 
+    public function index()
+    {
+        $goodsCode = "g001419022";
+        $field = 'little_traffic,stay,food_server,tick_server,guide_server,safe_server,child_price_type,child_price_info,child_price_supply,give_info';
+        $data = db('goods_group')->field($field)->where(array("goods_code"=> $goodsCode))->find();
+        if(empty($data)){
+            return json_encode(array("code" => 404,"msg" => "查询错误"));
+        }
+//        var_dump($data);
+
+        $data["tick_server"]             =   json_decode($data["tick_server"]); //门票
+        $data["child_price_info"]        =   json_decode($data["child_price_info"]); //儿童价说明
+        var_dump($data);
+        die;
+
+        echo urldecode(json_encode(array("code" => 200 ,"data" => $data)));
+
+
+
+    }
+
+    //商品添加
     public function add(){
         $state = input('state');
         if($state == null || $state == ""){
@@ -24,6 +46,7 @@ class Group extends common\controller\HomeBase
         echo $res;
     }
 
+    //商品显示
     public function show(){
         $state = input('state');
         if($state == null || $state == ""){
@@ -34,6 +57,7 @@ class Group extends common\controller\HomeBase
         echo $res;
     }
 
+    //商品页面选择显示
     public function option(){
         $state = input('state');
         if($state == null || $state == ""){
@@ -44,43 +68,54 @@ class Group extends common\controller\HomeBase
         echo $res;
     }
 
-
-
-    public function index()
-    {
-        $goodsCode = "g001691898";
-        $goodsField = "a.contact_code,a.inside_code,a.inside_title,a.subtitle,a.advance_time,a.online_type,a.on_time,a.off_time,a.rate";
-        $groupField = "b.service_type,b.line_type,b.play_type,b.begin_address,b.end_address,b.main_place,b.service_tel,b.refund_type,b.refund_info";
-        $allField = $goodsField.','.$groupField;
-        $alias = array("syy_goods" => "a","syy_goods_group" => "b");
-        $join = [['syy_goods_group','a.code = b.goods_code']];
-        $where = [
-            "a.code"        => $goodsCode,
-            'a.is_del'      =>  ['<>',"1"]  //未删除
-        ];
-        $data = db('goods')->alias($alias)->join($join)->field($allField)->where($where)->find();
-        if(!$data){
-            return json_encode(array("code" => 403,"msg" => "商品不存在或者商品被删除，请联系管理员"));
+    //商品删除
+    public function del(){
+        $goodsCode = "g001594519";
+        if(empty($goodsCode)){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
         }
-        $data["service_type"]      =   json_decode($data["service_type"]); //服务保障      （副）
-        $data["main_place"]        =   json_decode($data["main_place"]); //主要景点     （副）必须
-        $data["service_tel"]       =   json_decode($data["service_tel"]); //客服电话     （副）
-        $data["refund_info"]       =   json_decode($data["refund_info"]);//梯度详细退款     （副）
+        $where = [
+            "code"    =>  $goodsCode,
+            "sp_code"     =>  getSpCode(),         //todo 供应商code
+        ];
+        $res = db('goods')->field("check_type")->where($where)->find();
+        if($res["check_type"] == 0){
+            var_dump($res);
+        }else if($res["check_type"] && $res["check_type"] != 0){
 
-        $data["state"] = '0';
+        }else{
+            echo json_encode(array("code" => 405,"msg" => "请求错误，请联系管理员"));
+            return;
+        }
 
-        var_dump($data);
-        die;
-        $goodsCode = input('post.goodsCode');
-        $goodsField = "a.inside_title";
-        $groupField = "b.";
-        $allField = $goodsField.','.$groupField;
-        $alias = array("syy_goods" => "a","syy_goods_create" => "b");
-        $join = [['syy_goods_group','a.code = b.goods_code']];
-        $where = array("a.code" => $goodsCode);
-        $data = db('goods')->alias($alias)->join($join)->field($allField)->where($where)->find();
-        var_dump($data);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     //添加产品

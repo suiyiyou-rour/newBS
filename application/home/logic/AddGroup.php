@@ -33,6 +33,12 @@ class AddGroup
             case '7':
                 //预定须知添加
                 return $this->advanceKnow();
+            case '100':
+                //预定须知添加
+                return $this->imageUpload();
+            case '101':
+                //预定须知添加
+                return $this->imageDel();
             default:
                 return json_encode(array("code" => 404,"msg" => "参数错误"));
         }
@@ -86,9 +92,9 @@ class AddGroup
         $goodsRes = db('goods')->insert($goodsData);
         $groupRes = db('goods_group')->insert($groupData);
         $supplyRes = db('goods_supply')->insert($supplyData);
-        db('goods_create')->insert(array('goods_code' => $goodsCode,"tab" => 0));
+        db('goods_create')->insert(array('goods_code' => $goodsCode));
         if($goodsRes && $groupRes && $supplyRes){
-            return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode,"tab" => 1)));
+            return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
         }else {
             return json_encode(array("code" => 403,"msg" => "数据保存出错，请再试一次"));
         }
@@ -103,6 +109,7 @@ class AddGroup
         if(empty($goodsCode)){
             return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
         }
+
         //数据验证
         $data = $this->routeInfoData();
 //        $data = testGroupPage1();//测试参数
@@ -112,10 +119,10 @@ class AddGroup
             // 验证失败 输出错误信息
             return json_encode(array("code" => 405,"msg" => $validate->getError()));
         }
-        $groupRes = db('goods_group')->where(array("code" => $goodsCode))->update($data);
+        $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
         db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 1));
         if($groupRes){
-            return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode,"tab" => 2)));
+            return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
         }else {
             return json_encode(array("code" => 403,"msg" => "数据保存出错，请再试一次"));
         }
@@ -125,19 +132,99 @@ class AddGroup
     //产品特色添加
     public function sellingPoint()
     {
-        return "sellingPoint";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
+        }
+        $data       = input('post.');
+        //图片数组
+        if(empty($data["fileList"]) || empty($data["feature_reasons"])){
+            return json_encode(array("code" => 404,"msg" => "上传参数错误1"));
+        }
+        $fileList = objSetArray($data["fileList"]);
+        if(empty($fileList[0]["name"])){
+            return json_encode(array("code" => 404,"msg" => "上传参数错误2"));
+        }
+        $imageArray = array();
+        foreach ($fileList as $k){
+            $imageArray[] = $k["name"];
+        }
+
+        //首图
+        $goodsData["head_img"] = $fileList[0]["name"];
+        //图片数组
+        $supplyData["image"] = json_encode($imageArray);
+        //推荐理由 feature_reasons
+        $groupData["feature_reasons"] = json_encode($data["feature_reasons"]);
+        $dd["head_img"] = $fileList[0]["name"];
+        $dd["image"] = json_encode($imageArray);
+        $dd["feature_reasons"] = json_encode($data["feature_reasons"]);
+
+        $goodsRes  =  db('goods')->where(array("code" => $goodsCode))->update($goodsData);
+        $supplyRes =  db('goods_supply')->where(array("goods_code" => $goodsCode))->update($supplyData);
+        $groupRes  =  db('goods_group')->where(array("goods_code" => $goodsCode))->update($groupData);
+        db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 3));
+        if($goodsRes == false){
+            return json_encode(array("code" => 403,"msg" => "首图保存出错，请稍后再试"));
+        }
+        if($supplyRes == false){
+            return json_encode(array("code" => 403,"msg" => "图片保存错误，请稍后再试"));
+        }
+        if($groupRes == false){
+            return json_encode(array("code" => 403,"msg" => "推荐理由保存错误，请稍后再试"));
+        }
+        return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
+
+
     }
 
     //自费项目添加
     public function chargedItem()
     {
-        return "chargedItem";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
+        }
+        $data = input('post.');
+        $groupData["charged_item"] = $data["charged_item"];
+        if(empty($groupData["charged_item"])){
+            $groupData["charged_item"]  = "";
+        }
+
+        $groupData["charged_item"]      =   json_encode($groupData["charged_item"]); //自费项目
+        $res = db('goods_group')->where(array("goods_code" => $goodsCode))->update($groupData);
+        if(!$res){
+            return json_encode(array("code" => 403,"msg" => "推荐理由保存错误，请稍后再试"));
+        }
+        db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 3));
+        return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
     }
+
 
     //费用包含添加
     public function includeCost()
     {
-        return "includeCost";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
+        }
+
+        //数据验证
+        $data = $this->includeCostData();
+//        $validate = new \app\home\validate\Group();
+//        $result = $validate->scene('addIncludeCost')->check($data);
+//        if(true !== $result){
+//            // 验证失败 输出错误信息
+//            return json_encode(array("code" => 405,"msg" => $validate->getError()));
+//        }
+
+        $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
+        db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 4));
+        if($groupRes){
+            return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
+        }else {
+            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+        }
     }
 
     //费用不包含添加
@@ -157,6 +244,31 @@ class AddGroup
     {
         return "advanceKnow";
     }
+
+    //异步上传图片
+    private function imageUpload(){
+//        return json_encode(array("code" => 404,"msg" => "上传大小错误"));
+        $imgLimit = config("imageUpLimit");
+        $file = request()->file('file');
+        if(empty($file)){
+            return json_encode(array("code" => 404,"msg" => "参数错误"));
+        }
+        $info = $file->validate($imgLimit)->move(ROOT_PATH . 'public' . DS . 'image' . DS . 'group');
+        if($info){
+            return json_encode(array("code" => 200,"data" => array("name" => 'group'. DS  .$info->getSaveName())));
+        }else{
+            // 上传失败获取错误信息
+            return json_encode(array("code" => 404,"msg" => $file->getError()));
+        }
+    }
+
+    //图片删除
+    private function imageDel(){
+        $name = input("post.name");
+        return json_encode(array("code" => 200,"data" => $name));
+    }
+
+
 
     //基本信息数据接收
     private function basicInfoData (){
@@ -189,7 +301,7 @@ class AddGroup
         if(empty($data["gather_place"])){
             $data["gather_place"]  = "";
         }
-        if(empty($data["gather_place"])){
+        if(empty($data["route_info"])){
             $data["route_info"]  = "";
         }
         $data["gather_place"]      =   json_encode($data["gather_place"]); //集合地点
@@ -197,5 +309,32 @@ class AddGroup
         return $data;
     }
 
+    //产品特色数据接收
+    private function sellingPointData(){
+        $gain = ['fileList','feature_reasons'];
+        $data = Request::instance()->only($gain,'post');//        $data = input('post.');+
+        if(empty($data["feature_reasons"])){
+            $data["feature_reasons"]  = "";
+        }
+        $data["feature_reasons"]      =   json_encode($data["feature_reasons"]); //推荐理由
+
+
+        return $data;
+    }
+
+    //费用包含数据接收
+    private function includeCostData(){
+        $gain = ['little_traffic', 'stay', 'food_server', 'tick_server','guide_server','safe_server','child_price_type','child_price_info','child_price_supply','give_info'];
+        $data = Request::instance()->only($gain,'post');//        $data = input('post.');
+        if(empty($data["tick_server"])){
+            $data["tick_server"]  = ""; //门票
+        }
+        if(empty($data["child_price_info"])){
+            $data["child_price_info"]  = ""; //儿童价说明
+        }
+        $data["tick_server"]             =   json_encode($data["tick_server"]); //门票
+        $data["child_price_info"]        =   json_encode($data["child_price_info"]); //儿童价说明
+        return $data;
+    }
 
 }
