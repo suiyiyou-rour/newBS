@@ -97,7 +97,7 @@ class ShowGroup
                 return json_encode(array("code" => 1,"data" => $res));
             }else{
                 //没有 未填完信息
-                return json_encode(array("code" => 2,"data" => $res));
+                return json_encode(array("code" => 2));
             }
         }
     }
@@ -254,7 +254,7 @@ class ShowGroup
         }
         $output["state"]       = '5';
         $output["tab"]         = $tab;
-        $data["goodsCode"]    = $goodsCode;
+        $output["goodsCode"]    = $goodsCode;
         $output["cost_not_include"] = json_decode($data["cost_not_include"]);
 
         return json_encode(array("code" => 200,"data" => $output));
@@ -265,13 +265,41 @@ class ShowGroup
     //特殊人群限制
     public function specialPeople()
     {
-        return "specialPeople";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "商品号不能为空"));
+        }
+        $tab = $this->getGoodsTab($goodsCode);
+        $data = db('goods_group')->field("crowd_limit")->where(array("goods_code"=> $goodsCode))->find();
+        if(empty($data["crowd_limit"])){
+            return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
+        }
+        $output["state"]       = '6';
+        $output["tab"]         = $tab;
+        $output["goodsCode"]    = $goodsCode;
+        $output["crowd_limit"] = json_decode($data["crowd_limit"]);
+
+        return json_encode(array("code" => 200,"data" => $output));
     }
 
     //预定须知
     public function advanceKnow()
     {
-        return "advanceKnow";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "商品号不能为空"));
+        }
+        $tab = $this->getGoodsTab($goodsCode);
+        $data = db('goods_group')->field("book_notice")->where(array("goods_code"=> $goodsCode))->find();
+        if(empty($data["book_notice"])){
+            return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
+        }
+        $output["state"]       = '7';
+        $output["tab"]         = $tab;
+        $output["goodsCode"]    = $goodsCode;
+        $output["book_notice"] = json_decode($data["book_notice"]);
+
+        return json_encode(array("code" => 200,"data" => $output));
     }
 
     //获取商品页面

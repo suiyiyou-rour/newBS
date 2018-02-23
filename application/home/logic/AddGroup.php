@@ -50,8 +50,8 @@ class AddGroup
      * todo tab规则  0  1  2  3  4  5  6  7
      * todo 必须     1  1  1  0  1  0  0  1
      * todo 页码写入 0  1  3     6        7
-     *
      */
+
     //基本信息添加 0
     public function basicInfo()
     {
@@ -314,19 +314,42 @@ class AddGroup
         if(empty($goodsCode)){
             return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
         }
-        $crowd_limit = input("post.crowd_limit");
-        if(empty($crowd_limit)){
+        $postData = input("post.");
+        $data["crowd_limit"] = json_encode($postData["crowd_limit"]);
+        if(empty($data["crowd_limit"])){
             return json_encode(array("code" => 404,"msg" => "不能为空"));
         }
-        $data["crowd_limit"] = $crowd_limit;
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
+        if($groupRes){
+            return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
+        }else {
+            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+        }
 
     }
 
     //预定须知添加 7
     public function advanceKnow()
     {
-        return "advanceKnow";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
+        }
+        $postData = input("post.");
+        $data["book_notice"] = json_encode($postData["book_notice"]);
+        if(empty($data["book_notice"])){
+            return json_encode(array("code" => 404,"msg" => "不能为空"));
+        }
+        $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
+        if($groupRes === false){
+            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+        }
+        $tab = $this->getGoodsTab($goodsCode);
+        if($tab < 6){
+            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 7));
+        }
+        return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
+
     }
 
     //异步上传图片 100

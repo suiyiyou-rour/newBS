@@ -3,10 +3,10 @@
  * 跟团游
  */
 namespace app\home\controller;
-use app\common;
+use app\common\controller\HomeBase;
 use think\Request;
 //use \think\Validate;
-class Group extends common\controller\HomeBase
+class Group extends HomeBase
 {
     public function __construct()
     {
@@ -16,23 +16,7 @@ class Group extends common\controller\HomeBase
 
     public function index()
     {
-        $goodsCode = "g001419022";
-        $field = 'little_traffic,stay,food_server,tick_server,guide_server,safe_server,child_price_type,child_price_info,child_price_supply,give_info';
-        $data = db('goods_group')->field($field)->where(array("goods_code"=> $goodsCode))->find();
-        if(empty($data)){
-            return json_encode(array("code" => 404,"msg" => "查询错误"));
-        }
-//        var_dump($data);
-
-        $data["tick_server"]             =   json_decode($data["tick_server"]); //门票
-        $data["child_price_info"]        =   json_decode($data["child_price_info"]); //儿童价说明
-        var_dump($data);
-        die;
-
-        echo urldecode(json_encode(array("code" => 200 ,"data" => $data)));
-
-
-
+        echo 123;
     }
 
     //商品添加
