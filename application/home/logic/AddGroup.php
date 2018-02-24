@@ -33,6 +33,9 @@ class AddGroup
             case '7':
                 //预定须知添加
                 return $this->advanceKnow();
+            case '11':
+                //价格库存
+                return $this->advanceKnow();
             case '100':
                 //预定须知添加
                 return $this->imageUpload();
@@ -349,6 +352,11 @@ class AddGroup
             db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 7));
         }
         return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
+
+    }
+
+    //价格库存添加
+    public function ratesInventory(){
 
     }
 

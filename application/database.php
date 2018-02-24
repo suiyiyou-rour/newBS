@@ -13,13 +13,13 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
-    'hostname'        => 'bdm27231351.my3w.com',
+    'hostname'        => '39.106.102.248',
     // 数据库名
-    'database'        => 'bdm27231351_db',
+    'database'        => 'suiyiyou',
     // 用户名
-    'username'        => 'bdm27231351',
+    'username'        => 'root',
     // 密码
-    'password'        => 'qq398212600',
+    'password'        => 'suiyiyou123',
     // 端口
     'hostport'        => '3306',
     // 连接dsn

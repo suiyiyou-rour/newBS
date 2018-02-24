@@ -16,7 +16,10 @@ class Group extends HomeBase
 
     public function index()
     {
-        echo 123;
+        $contact = db('contact')->field('code,name,rate')->where(array('sp_code' => 1234567))->select();
+//        var_dump($contact);
+        $t = json($contact);
+        var_dump($t);
     }
 
     //商品添加

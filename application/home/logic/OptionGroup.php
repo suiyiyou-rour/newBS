@@ -40,9 +40,9 @@ class OptionGroup
     //基本信息
     public function basicInfo()
     {
-        $contact = db('contact')->field('code,name,rate')->where(array('sp_code' => 1))->select();
+        $contact = db('contact')->field('code,name,rate')->where(array('sp_code' => 1234567))->select();
         if(!$contact){
-            return json_encode(array("code" => 405,"msg" => "合同加载错误,请刷新页面"));
+            return json_encode(array("code" => 405,"msg" => "合同加载错误,请联系管理员"));
         }
         $data["contact"] = $contact;
         $data["hash"] = getFromHash();
