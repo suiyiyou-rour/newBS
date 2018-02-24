@@ -37,7 +37,7 @@ class OptionGroup
         }
     }
 
-    //基本信息
+    //基本信息 0
     public function basicInfo()
     {
         $contact = db('contact')->field('code,name,rate')->where(array('sp_code' => 1234567))->select();
@@ -49,7 +49,7 @@ class OptionGroup
         return json_encode(array("code" => 200,"data" => $data));
     }
 
-    //行程信息
+    //行程信息 1
     public function routeInfo()
     {
         $goodsCode = input('post.goodsCode');
@@ -65,36 +65,37 @@ class OptionGroup
 
     }
 
-    //产品特色
+    //产品特色 2
     public function sellingPoint()
     {
         return "sellingPoint";
     }
 
-    //自费项目
+    //自费项目 3
     public function chargedItem()
     {
         return "chargedItem";
     }
 
-    //费用包含
+    //费用包含 4
     public function includeCost()
     {
-        $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "查询商品号不能为空"));
-        }
-        $address = db('goods_group')->field('main_place')->where(array('goods_code' => $goodsCode))->find();
-        if(!$address){
-            return json_encode(array("code" => 405,"msg" => "查询产品不存在，请联系管理员"));
-        }
-        $address = json_decode($address["main_place"],true);
-        foreach ($address as $k){
-            $array = array("bol" => 0 ,"name" => $k["place"]);
-            $output[] = $array;
-        }
-//        $output = $address["tickBox"];
-        return json_encode(array("code" => 200,"data" => $output));
+//        $goodsCode = input('post.goodsCode');
+//        if(empty($goodsCode)){
+//            return json_encode(array("code" => 404,"msg" => "查询商品号不能为空"));
+//        }
+//        $address = db('goods_group')->field('main_place')->where(array('goods_code' => $goodsCode))->find();
+//        if(!$address){
+//            return json_encode(array("code" => 405,"msg" => "查询产品不存在，请联系管理员"));
+//        }
+//        $output = json_decode($address['main_place']);
+////        $address = json_decode($address["main_place"],true);
+////        foreach ($address as $k){
+////            $array = array("bol" => 0 ,"name" => $k["place"]);
+////            $output[] = $array;
+////        }
+////        $output = $address["tickBox"];
+//        return json_encode(array("code" => 200,"data" => $output));
     }
 
     //费用不包含

@@ -8,6 +8,18 @@ class AddGroup
      * 状态分发
      */
     public function dispatcher($state){
+        //需要商品code
+        if($state != '0'){
+            $goodsCode = input('post.goodsCode');
+            if(empty($goodsCode)){
+                return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
+            }
+            //是否有写入状态检测
+            $res = $this->checkGoodsType($goodsCode);
+            if($res !== true){
+                return json_encode(array("code" => 405,"msg" => $res));
+            }
+        }
         switch ($state) {
             case '0':
                 //基本信息添加
@@ -73,6 +85,7 @@ class AddGroup
                 return json_encode(array("code" => 405,"msg" => $validate->getError()));
             }
 
+
             $goodsCode = createGoodsCode("g");//产品编号
             //主表添加数据
             $goodsData["code"]              =    $goodsCode;//产品编号
@@ -105,8 +118,8 @@ class AddGroup
             $goodsRes = db('goods')->insert($goodsData);
             $groupRes = db('goods_group')->insert($groupData);
             $supplyRes = db('goods_supply')->insert($supplyData);
-            db('goods_create')->insert(array('goods_code' => $goodsCode));
             if($goodsRes && $groupRes && $supplyRes){
+                db('goods_create')->insert(array('goods_code' => $goodsCode));
                 return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
             }else {
                 return json_encode(array("code" => 403,"msg" => "数据保存出错，请再试一次"));
@@ -158,10 +171,6 @@ class AddGroup
     public function routeInfo()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
-
         //数据验证
         $data = $this->routeInfoData();
 //        $data = testGroupPage1();//测试参数
@@ -187,9 +196,7 @@ class AddGroup
     public function sellingPoint()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
+
         $data       = input('post.');
         //图片数组
         if(empty($data["fileList"]) || empty($data["feature_reasons"])){
@@ -240,9 +247,7 @@ class AddGroup
     public function chargedItem()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
+
         $data = input('post.');
         $groupData["charged_item"] = $data["charged_item"];
         if(empty($groupData["charged_item"])){
@@ -257,14 +262,10 @@ class AddGroup
         return json_encode(array("code" => 200,"data" => array("goodsCode" => $goodsCode)));
     }
 
-
     //费用包含添加 4
     public function includeCost()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
 
         //数据验证
         $data = $this->includeCostData();
@@ -290,9 +291,7 @@ class AddGroup
     public function notInCost()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
+
         $post = input("post.");
         if(empty($post["cost_not_include"])){
             return json_encode(array("code" => 404,"msg" => "费用不包含不能为空"));
@@ -314,9 +313,7 @@ class AddGroup
     public function specialPeople()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
+
         $postData = input("post.");
         $data["crowd_limit"] = json_encode($postData["crowd_limit"]);
         if(empty($data["crowd_limit"])){
@@ -335,9 +332,7 @@ class AddGroup
     public function advanceKnow()
     {
         $goodsCode = input('post.goodsCode');
-        if(empty($goodsCode)){
-            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-        }
+
         $postData = input("post.");
         $data["book_notice"] = json_encode($postData["book_notice"]);
         if(empty($data["book_notice"])){
@@ -355,14 +350,42 @@ class AddGroup
 
     }
 
-    //价格库存添加
+    //价格库存添加 11
     public function ratesInventory(){
+        $goodsCode = input('post.goodsCode');
 
+//        M('group_price')->where(array('g_code' => $code, 'g_user_code' => $this->userId))->delete();
+//        foreach ($rl as $r) {
+//            $data['g_go_time'] = $r['priceDate'];//日期
+//            $data['g_man_my_price'] = $r['menplatformprice'];//成人平台价格
+//            $data['g_man_mark_price'] = $r['menmarketprice'];//成人市场价
+//            $data['g_man_js_price'] = $r['mencloseprice'];//成人结算价
+//            $data['g_is_child'] = $r['ischildtravel']['val'];//是否有儿童价
+//            $data['g_child_my_price'] = $r['ischildtravel']['platformprice'];//儿童平台价格
+//            $data['g_child_js_price'] = $r['ischildtravel']['closeprice'];//儿童市场价格
+//            $data['g_df_ch'] = $r['issingleroom']['val'];//单房差 -1为无
+//            $data['g_df_plat'] = $r['issingleroom']['platformprice'];//单房差 -1为无
+//            $data['g_df_ch_close'] = $r['issingleroom']['closeprice'];//单房差 -1为无
+//            $data['g_no_kc_num'] = $r['noneedkc'];//不需要确认库存
+//            $data['g_need_kc_num'] = $r['needkc'];//需要确认库存
+//            $data['g_is_buy'] = $r['islimitNum']['val'];//最大购买量
+//            $data['g_max_buy_num'] = $r['islimitNum']['max'];//最大购买量
+//            $data['g_min_buy_num'] = $r['islimitNum']['min'];//最低购买量
+//            $data['g_code'] = $code;
+//            $data['g_user_code'] = $this->userId;
+//            $result = M('group_price')->add($data);
+//            if (!$result) {
+//                $this->ajaxReturn(array('code' => '0', 'msg' => '操作失败'));
+//            }
+//        }
     }
 
     //异步上传图片 100
     private function imageUpload(){
 //        return json_encode(array("code" => 404,"msg" => "上传大小错误"));
+        //todo 商品号
+        $goodsCode = input('post.goodsCode');
+//        return json_encode(array("code" => 404,"msg" => $goodsCode));
         $imgLimit = config("imageUpLimit");
         $file = request()->file('file');
         if(empty($file)){
@@ -370,7 +393,7 @@ class AddGroup
         }
         $info = $file->validate($imgLimit)->move(ROOT_PATH . 'public' . DS . 'image' . DS . 'group');
         if($info){
-            return json_encode(array("code" => 200,"data" => array("name" => 'group'. DS  .$info->getSaveName())));
+            return json_encode(array("code" => 200,"data" => array("name" => 'group'. DS  .$info->getSaveName(),"goodsCode"=>$goodsCode)));
         }else{
             // 上传失败获取错误信息
             return json_encode(array("code" => 404,"msg" => $file->getError()));
@@ -380,6 +403,7 @@ class AddGroup
     //图片删除 101
     private function imageDel(){
         $name = input("post.name");
+        $goodsCode = input("post.goodsCode");
         return json_encode(array("code" => 200,"data" => $name));
     }
 
@@ -439,15 +463,15 @@ class AddGroup
 
     //费用包含数据接收
     private function includeCostData(){
-        $gain = ['little_traffic', 'stay', 'food_server', 'tick_server','guide_server','safe_server','child_price_type','child_price_info','child_price_supply','give_info'];
+        $gain = ['main_place','little_traffic', 'stay', 'food_server', 'tick_server','guide_server','safe_server','child_price_type','child_price_info','child_price_supply','give_info'];
         $data = Request::instance()->only($gain,'post');//        $data = input('post.');
-        if(empty($data["tick_server"])){
-            $data["tick_server"]  = ""; //门票
+        if(empty($data["main_place"])){
+            $data["main_place"]  = ""; //门票
         }
         if(empty($data["child_price_info"])){
             $data["child_price_info"]  = ""; //儿童价说明
         }
-        $data["tick_server"]             =   json_encode($data["tick_server"]); //门票
+        $data["main_place"]             =   json_encode($data["main_place"]); //门票
         $data["child_price_info"]        =   json_encode($data["child_price_info"]); //儿童价说明
         return $data;
     }
@@ -460,10 +484,25 @@ class AddGroup
     }
 
 
-
     //获取商品页面
     private function getGoodsTab($goodsCode){
         $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
         return $res["tab"];
+    }
+
+    //商品修改状态检测
+    private function checkGoodsType($goodsCode){
+        $where = array(
+            "code"          =>  $goodsCode,
+            'is_del'      =>  ['<>',"1"]  //未删除
+        );
+        $res = db('goods')->field("check_type")->where($where)->find();
+        if(!$res){
+            return "没有商品或者商品被删除";
+        }
+        if($res["check_type"] !== 0 && $res["check_type"] !== 1){
+            return "商品不在编辑状态";
+        }
+        return true;
     }
 }

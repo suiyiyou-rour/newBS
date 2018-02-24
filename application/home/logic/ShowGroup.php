@@ -48,7 +48,7 @@ class ShowGroup
      *
      */
 
-    //基本信息
+    //基本信息 0
     public function basicInfo()
     {
         $goodsCode = input('post.goodsCode');
@@ -102,7 +102,7 @@ class ShowGroup
         }
     }
 
-    //行程信息
+    //行程信息 1
     public function routeInfo()
     {
         //TODO 判断未删除 制作中 填写过 未填写过
@@ -137,7 +137,7 @@ class ShowGroup
 
     }
 
-    //产品特色
+    //产品特色 2
     public function sellingPoint()
     {
         //TODO 判断未删除 制作中 填写过 未填写过
@@ -180,7 +180,7 @@ class ShowGroup
 
     }
 
-    //自费项目
+    //自费项目 3
     public function chargedItem()
     {
         $goodsCode = input('post.goodsCode');
@@ -211,7 +211,7 @@ class ShowGroup
 
     }
 
-    //费用包含
+    //费用包含 4
     public function includeCost()
     {
         $goodsCode = input('post.goodsCode');
@@ -220,15 +220,21 @@ class ShowGroup
         }
         $tab = $this->getGoodsTab($goodsCode);
         if($tab < 4){
-            return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
+            $data = db('goods_group')->field("main_place")->where(array("goods_code"=> $goodsCode))->find();
+            if(empty($data)){
+                return json_encode(array("code" => 404,"msg" => "查询错误"));
+            }
+            $data["main_place"]             =   json_decode($data["main_place"]); //门票
+            return json_encode(array("code" => 201,"data" => array("tab" => $tab,"main_place"=>$data["main_place"])));
         }
-        $field = 'little_traffic,stay,food_server,tick_server,guide_server,safe_server,child_price_type,child_price_info,child_price_supply,give_info';
+
+        $field = 'main_place,little_traffic,stay,food_server,tick_server,guide_server,safe_server,child_price_type,child_price_info,child_price_supply,give_info';
         $data = db('goods_group')->field($field)->where(array("goods_code"=> $goodsCode))->find();
         if(empty($data)){
             return json_encode(array("code" => 404,"msg" => "查询错误"));
         }
 
-        $data["tick_server"]             =   json_decode($data["tick_server"]); //门票
+        $data["main_place"]             =   json_decode($data["main_place"]); //门票
         $data["child_price_info"]        =   json_decode($data["child_price_info"]); //儿童价说明
         $data["tab"] = $tab;
         $data["state"] = '4';
@@ -238,7 +244,7 @@ class ShowGroup
 
     }
 
-    //费用不包含
+    //费用不包含 5
     public function notInCost()
     {
         $goodsCode = input('post.goodsCode');
@@ -262,7 +268,7 @@ class ShowGroup
 
     }
 
-    //特殊人群限制
+    //特殊人群限制 6
     public function specialPeople()
     {
         $goodsCode = input('post.goodsCode');
@@ -282,7 +288,7 @@ class ShowGroup
         return json_encode(array("code" => 200,"data" => $output));
     }
 
-    //预定须知
+    //预定须知 8
     public function advanceKnow()
     {
         $goodsCode = input('post.goodsCode');
@@ -302,9 +308,17 @@ class ShowGroup
         return json_encode(array("code" => 200,"data" => $output));
     }
 
-    //获取商品页面
+    //获取商品页面 9
     private function getGoodsTab($goodsCode){
         $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
         return $res["tab"];
+    }
+
+    //测试页码
+    private function checkTab($goodsCode){
+        $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
+        if($res === null){
+
+        }
     }
 }
