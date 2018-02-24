@@ -13,13 +13,13 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
-    'hostname'        => '47.94.92.120',
+    'hostname'        => 'bdm27231351.my3w.com',
     // 数据库名
-    'database'        => 'syy',
+    'database'        => 'bdm27231351_db',
     // 用户名
-    'username'        => 'linux',
+    'username'        => 'bdm27231351',
     // 密码
-    'password'        => '12345678',
+    'password'        => 'qq398212600',
     // 端口
     'hostport'        => '3306',
     // 连接dsn

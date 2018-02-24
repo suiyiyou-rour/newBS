@@ -1,6 +1,7 @@
 <?php
 namespace app\home\controller;
 use app\common\controller\HomeBase;
+
 class Index extends HomeBase
 {
     public function __construct()
