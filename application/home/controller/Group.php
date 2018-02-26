@@ -16,21 +16,29 @@ class Group extends HomeBase
 
     public function index()
     {
-        $goodsCode = "g001969474";
-        $where = array(
-            "code"          =>  $goodsCode,
-            'is_del'      =>  ['<>',"1"]  //未删除
-        );
-        $res = db('goods')->field("check_type")->where($where)->find();
-        if(!$res){
-            echo 1;
-            die;
-        }
-        if($res["check_type"] !== 0 && $res["check_type"] !== 1){
-            echo 2;
-            die;
-        }
-        var_dump($res["check_type"]);
+//        $goodsCode = "g001969474";
+//        $res = db('goods_calendar')->where(array("goods_code" => $goodsCode,"date" => $data["date"]))->find();
+//        print_r($res);
+//        $data["date"] = strtotime(date("Y-m-d", $data["date"]));
+//        var_dump($data["date"]);
+//        $array = array("1","2","4");
+//        foreach ($array as $k){
+//            echo $k."<br/>";
+//        }
+
+//        $goodsCode = "g001969474";
+//        $res = db('goods_calendar')
+//            ->field(['id','date'],true)
+//            ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
+//            ->where(array("goods_code" => $goodsCode))
+//            ->order("date asc")
+//            ->fetchSql()
+//            ->select();
+//        var_dump($res);
+        echo 0.1 + 0.2;
+
+
+
 
 
     }

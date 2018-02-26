@@ -33,6 +33,9 @@ class ShowGroup
             case '7':
                 //预定须知添加
                 return $this->advanceKnow();
+            case '11':
+                //价格库存
+                return $this->ratesInventory();
             default:
                 return json_encode(array("code" => 404,"msg" => "参数错误"));
         }
@@ -288,7 +291,7 @@ class ShowGroup
         return json_encode(array("code" => 200,"data" => $output));
     }
 
-    //预定须知 8
+    //预定须知 7
     public function advanceKnow()
     {
         $goodsCode = input('post.goodsCode');
@@ -308,7 +311,63 @@ class ShowGroup
         return json_encode(array("code" => 200,"data" => $output));
     }
 
-    //获取商品页面 9
+    //价格日历显示 11
+    public function ratesInventory(){
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 412,"msg" => "商品号不能为空"));
+        }
+//        $res = db('goods_calendar')
+//            ->field("plat_price,FROM_UNIXTIME(date,'%Y-%c-%d') as date")
+//            ->where(array("goods_code" => $goodsCode))
+//            ->order("date asc")
+////            ->order()
+//            ->select();
+        $res = db('goods_calendar')
+            ->field(['id','date'],true)
+            ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
+            ->where(array("goods_code" => $goodsCode))
+            ->order("date asc")
+            ->select();
+        if($res){
+            foreach ($res as &$k){
+                $k["plat_price"] = (float)$k["plat_price"];
+                $k["market_price"] = (float)$k["market_price"];
+                $k["settle_price"] = (float)$k["settle_price"];
+                $k["market_child_price"] = (float)$k["market_child_price"];
+                $k["plat_child_price"] = (float)$k["plat_child_price"];
+                $k["settle_child_price"] = (float)$k["settle_child_price"];
+                $k["house_market_price"] = (float)$k["house_market_price"];
+                $k["plat_house_price"] = (float)$k["plat_house_price"];
+                $k["settle_house_price"] = (float)$k["settle_house_price"];
+//                $k["date"] = date("Y-m-d",$k["date"]);
+            }
+            return json_encode(array("code" => 200,"data" => $res));
+        }
+        return "";
+
+
+    }
+
+    //价格详细 12
+    public function priceInfo(){
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 412,"msg" => "商品号不能为空"));
+        }
+        $date = input('post.date');
+        if(empty($date)){
+            return json_encode(array("code" => 404,"msg" => "查询日期不能为空"));
+        }
+
+        $res = db('goods_calendar')->where(array("goods_code" => $goodsCode,"date" => strtotime($date)))->find();
+        if(!$res){
+            return json_encode(array("code" => 405,"msg" => "查询错误，请重试或联系管理员"));
+        }
+        return json_encode(array("code" => 200,"date" => $res));
+    }
+
+    //获取商品页面
     private function getGoodsTab($goodsCode){
         $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
         return $res["tab"];

@@ -32,6 +32,9 @@ class OptionGroup
             case '7':
                 //预定须知添加
                 return $this->advanceKnow();
+            case '11':
+                //价格库存
+                return $this->ratesInventory();
             default:
                 return json_encode(array("code" => 404,"msg" => "参数错误"));
         }
@@ -96,9 +99,10 @@ class OptionGroup
 ////        }
 ////        $output = $address["tickBox"];
 //        return json_encode(array("code" => 200,"data" => $output));
+        return "includeCost";
     }
 
-    //费用不包含
+    //费用不包含 5
     public function notInCost()
     {
         $goodsCode = input('post.goodsCode');
@@ -113,15 +117,28 @@ class OptionGroup
 
     }
 
-    //特殊人群限制
+    //特殊人群限制 6
     public function specialPeople()
     {
         return "specialPeople";
     }
 
-    //预定须知
+    //预定须知 7
     public function advanceKnow()
     {
         return "advanceKnow";
+    }
+
+    //价格库存 11
+    public function ratesInventory(){
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 412,"msg" => "商品号不能为空"));
+        }
+        $data = db('goods_group')->field('child_price_type')->where(array('goods_code' => $goodsCode))->find();
+        if(!$data){
+            return json_encode(array("code" => 405,"msg" => "查询产品不存在，请联系管理员"));
+        }
+        return json_encode(array("code" => 200,"data" => $data));
     }
 }
