@@ -10,7 +10,7 @@ class Goods
      * 产品模块分发
      */
     public function dispatcher($goodsType,$operation,$state){
-        $array = array('group','ticket','scenery');
+        $array = array('Group','Ticket','Scenery');
         if(in_array($goodsType,$array)){
             return $this->$goodsType($operation,$state);
         }else{
@@ -30,11 +30,11 @@ class Goods
 
     //门票
     public function ticket($operation,$state){
-        return 2;
+        return "ticket";
     }
 
     //酒景
     public function scenery($operation,$state){
-        return 3;
+        return "scenery";
     }
 }

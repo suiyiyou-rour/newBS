@@ -16,64 +16,22 @@ class Group extends HomeBase
 
     public function index()
     {
-//        $goodsCode = "g001969474";
-//        $res = db('goods_calendar')->where(array("goods_code" => $goodsCode,"date" => $data["date"]))->find();
-//        print_r($res);
-//        $data["date"] = strtotime(date("Y-m-d", $data["date"]));
-//        var_dump($data["date"]);
-//        $array = array("1","2","4");
-//        foreach ($array as $k){
-//            echo $k."<br/>";
-//        }
-
-//        $goodsCode = "g001969474";
-//        $res = db('goods_calendar')
-//            ->field(['id','date'],true)
-//            ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
-//            ->where(array("goods_code" => $goodsCode))
-//            ->order("date asc")
-//            ->fetchSql()
-//            ->select();
-//        var_dump($res);
-        echo 0.1 + 0.2;
-
-
-
-
-
+//        $this->dispatcher();
     }
 
     //商品添加
     public function add(){
-        $state = input('state');
-        if($state == null || $state == ""){
-            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
-            return;
-        }
-        $res =  \think\Loader::model('Goods','logic')->dispatcher("group","Add",$state);
-        echo $res;
+        $this->dispatcher();
     }
 
     //商品显示
     public function show(){
-        $state = input('state');
-        if($state == null || $state == ""){
-            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
-            return;
-        }
-        $res =  \think\Loader::model('Goods','logic')->dispatcher("group","Show",$state);
-        echo $res;
+        $this->dispatcher();
     }
 
     //商品页面选择显示
     public function option(){
-        $state = input('state');
-        if($state == null || $state == ""){
-            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
-            return;
-        }
-        $res =  \think\Loader::model('Goods','logic')->dispatcher("group","Option",$state);
-        echo $res;
+        $this->dispatcher();
     }
 
     //商品删除
@@ -99,7 +57,20 @@ class Group extends HomeBase
 
     }
 
+    //分配
+    private function dispatcher(){
+        $request = request();
+        $controller  = ucfirst($request->controller());
+        $action  = ucfirst($request->action());
+        $state = input('state');
+        if($state == null || $state == ""){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
+        }
+        $res = \think\Loader::model('Goods','logic')->dispatcher($controller,$action,$state);
+        echo $res;
 
+    }
 
 
 
