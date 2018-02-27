@@ -36,6 +36,9 @@ class ShowGroup
             case '11':
                 //价格库存
                 return $this->ratesInventory();
+            case '12':
+                //价格库存
+                return $this->priceList();
             default:
                 return json_encode(array("code" => 404,"msg" => "参数错误"));
         }
@@ -349,22 +352,56 @@ class ShowGroup
 
     }
 
-    //价格详细 12
-    public function priceInfo(){
+    //价格日历详细 12
+    public function priceList(){
         $goodsCode = input('post.goodsCode');
         if(empty($goodsCode)){
-            return json_encode(array("code" => 412,"msg" => "商品号不能为空"));
+            return json_encode(array("code" => 404,"data" => "商品号不能为空"));
         }
-        $date = input('post.date');
-        if(empty($date)){
-            return json_encode(array("code" => 404,"msg" => "查询日期不能为空"));
+        $dateTime = input('post.time/a');
+        $page = input('post.page');
+
+        if (empty($page)) {
+            $page = 1;
         }
 
-        $res = db('goods_calendar')->where(array("goods_code" => $goodsCode,"date" => strtotime($date)))->find();
-        if(!$res){
-            return json_encode(array("code" => 405,"msg" => "查询错误，请重试或联系管理员"));
+        if($dateTime && count($dateTime) >= 2){
+            $where["date"] = [
+                [ '>=' , strtotime($dateTime[0])],
+                [ '<=' , strtotime($dateTime[1])],
+                "and"
+            ];
         }
-        return json_encode(array("code" => 200,"date" => $res));
+        $where["goods_code"] = $goodsCode;
+
+        $count = db('goods_calendar')->field('id')->where($where)->count();
+        if(!$count){
+            return json_encode(array("code" => 200,"data" => array("count" => 0)));
+        }
+        $res = db('goods_calendar')
+            ->field(['id','date'],true)
+            ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
+            ->where($where)
+            ->order("date asc")
+            ->page($page,10)
+            ->select();
+        if($res) {
+            foreach ($res as &$k) {
+                $k["plat_price"] = (float)$k["plat_price"];
+                $k["market_price"] = (float)$k["market_price"];
+                $k["settle_price"] = (float)$k["settle_price"];
+                $k["market_child_price"] = (float)$k["market_child_price"];
+                $k["plat_child_price"] = (float)$k["plat_child_price"];
+                $k["settle_child_price"] = (float)$k["settle_child_price"];
+                $k["house_market_price"] = (float)$k["house_market_price"];
+                $k["plat_house_price"] = (float)$k["plat_house_price"];
+                $k["settle_house_price"] = (float)$k["settle_house_price"];
+//                $k["date"] = date("Y-m-d",$k["date"]);
+            }
+        }
+        $output["list"]  =  $res;
+        $output["count"]  =  $count;
+        return json_encode(array("code" => 200,"data" => $output));
     }
 
     //获取商品页面
