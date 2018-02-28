@@ -17,16 +17,118 @@ class Group extends HomeBase
     public function index()
     {
 //        $this->dispatcher();
+        $goodsCode = "g001356493";
+        $res = db('goods_group')->field("child_price_type")->where(array("goods_code" => $goodsCode))->find();
+        var_dump($res);
+        return;
     }
+
+
 
     //商品添加
     public function add(){
         $this->dispatcher();
     }
 
-    //商品显示
+    //商品添加显示
     public function show(){
         $this->dispatcher();
+    }
+
+    //商品列表显示
+    public function goodsList(){
+        $where = array();
+        $show_title = input("post.show_title");         //随意游产品名称
+        if($show_title){
+            $where["a.show_title"] = ['like',$show_title];
+        }
+
+        $inside_title = input("post.inside_title");     //供应商产品名称
+        if($inside_title){
+            $where["a.inside_title"] = ['like',$inside_title];
+        }
+
+        $begin_address = input("post.begin_address");  //出发地
+        if($begin_address){
+            $where["b.begin_address"] = ['like',$begin_address];
+        }
+
+        $end_address = input("post.end_address");         //目的地
+        if($end_address){
+            $where["b.end_address"] = ['like',$end_address];
+        }
+
+        $check_type = input("post.check_type");        //审核状态
+        if($check_type){    //0全查
+            $where["a.check_type"] = $check_type;
+        }else{
+            $where["a.check_type"] = ['<>',0];
+        }
+        $where["a.sp_code"] = session("sp.code");   //供应商
+        $page = input("post.page");        //页码
+        if(empty($page)){
+            $page = 1;
+        }
+
+        $alias = array("syy_goods" => "a","syy_goods_group" => "b");
+        $join = [['syy_goods_group','a.code = b.goods_code']];
+        $goodsField = "a.code,a.inside_code,a.inside_title,a.show_title,a.check_type";
+        $groupField = "b.play_type,b.begin_address,b.child_price_type";
+        $allField = $goodsField.','.$groupField;
+
+        $count = db('goods')->alias($alias)->where($where)->join($join)->count('a.id');
+        if(!$count){
+            echo json_encode(array("code" => 200,"data" => array("count"=>0)));
+            return;
+        }
+
+        $res = db('goods')->alias($alias)->field($allField)->where($where)->join($join)->order('a.id desc')->page($page,10)->select();
+        foreach ($res as &$k){
+            $calendarWhere["goods_code"] = $k["code"];
+            //儿童价格
+            if($k["child_price_type"] == 0 || $k["child_price_type"] == 1){//无儿童价格 或 和成人同价
+                $calendarField = "MIN(plat_price) as plat_price ,MAX(date) as date,MIN(plat_house_price) as plat_house_price";
+                $priceArray = db('goods_calendar')->field($calendarField)->where($calendarWhere)->select();
+                if($priceArray){
+                    $k["plat_price"]            = $priceArray[0]["plat_price"] ;        //成人价格
+                    $k["date"]                   = $priceArray[0]["date"] ;              //最后团期
+                    $k["plat_house_price"]      = $priceArray[0]["plat_house_price"] ; //单房差
+                }
+            }else{
+                $calendarField = "MIN(plat_price) as plat_price,MIN(plat_child_price) as plat_child_price,MAX(date) as date,MIN(plat_house_price) as plat_house_price";
+                $priceArray = db('goods_calendar')->field($calendarField)->where($calendarWhere)->select();
+                if($priceArray){
+                    $k["plat_price"]        = $priceArray[0]["plat_price"] ;       //成人价格
+                    $k["date"]               = $priceArray[0]["date"] ;            //最后团期
+                    $k["plat_child_price"] = $priceArray[0]["plat_child_price"] ;//儿童价格
+                    $k["plat_house_price"]      = $priceArray[0]["plat_house_price"] ; //单房差
+                }
+            }
+
+            if($k["child_price_type"] == 0){//无儿童价格
+                $k["plat_child_price"] = "--";
+            }else if($k["child_price_type"] == 1){//和成人同价
+                $k["plat_child_price"] = $k["plat_price"];
+            }
+
+            if(empty($k["plat_house_price"])){
+                $k["plat_house_price"] = "--";
+            }
+//            $plat_price = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_price > 0')->min('plat_price');
+//            $plat_price ? $k["plat_price"] = $plat_price : $k["plat_price"] = "--";
+//            $platChildPrice  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_child_price > 0')->min('plat_child_price');
+//            $platChildPrice ? $k["plat_child_price"] = $platChildPrice : $k["plat_child_price"] = "--";
+            //单房差特殊 有开有关
+//            $platHousePrice  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_house_price > 0')->min('plat_house_price');
+//            $platHousePrice ? $k["plat_house_price"] = $platHousePrice : $k["plat_house_price"] = "--";
+//            $date  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('date > 0')->max('date');
+//            $k["date"] = date("Y-m-d",$date);
+        }
+        $output["list"]  =  $res;
+        $output["count"]  =  $count;
+        echo json_encode(array("code" => 200,"data" => $output));
+        return;
+
     }
 
     //商品页面选择显示

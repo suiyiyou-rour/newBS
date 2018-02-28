@@ -10,25 +10,25 @@ class ShowGroup
     public function dispatcher($state){
         switch ($state) {
             case '0':
-                //基本信息添加
+                //基本信息
                 return $this->basicInfo();
             case '1':
-                //行程信息添加
+                //行程信息
                 return $this->routeInfo();
             case '2':
-                //产品特色添加
+                //产品特色
                 return $this->sellingPoint();
             case '3':
-                //自费项目添加
+                //自费项目
                 return $this->chargedItem();
             case '4':
-                //费用包含添加
+                //费用包含
                 return $this->includeCost();
             case '5':
-                //费用不包含添加
+                //费用不包含
                 return $this->notInCost();
             case '6':
-                //特殊人群限制添加
+                //特殊人群限制
                 return $this->specialPeople();
             case '7':
                 //预定须知添加
@@ -37,8 +37,11 @@ class ShowGroup
                 //价格库存
                 return $this->ratesInventory();
             case '12':
-                //价格库存
+                //价格库存列表
                 return $this->priceList();
+            case '20':
+                //价格库存列表
+                return $this->goodsHead();
             default:
                 return json_encode(array("code" => 404,"msg" => "参数错误"));
         }
@@ -340,9 +343,7 @@ class ShowGroup
                 $k["market_child_price"] = (float)$k["market_child_price"];
                 $k["plat_child_price"] = (float)$k["plat_child_price"];
                 $k["settle_child_price"] = (float)$k["settle_child_price"];
-                $k["house_market_price"] = (float)$k["house_market_price"];
                 $k["plat_house_price"] = (float)$k["plat_house_price"];
-                $k["settle_house_price"] = (float)$k["settle_house_price"];
 //                $k["date"] = date("Y-m-d",$k["date"]);
             }
             return json_encode(array("code" => 200,"data" => $res));
@@ -393,9 +394,7 @@ class ShowGroup
                 $k["market_child_price"] = (float)$k["market_child_price"];
                 $k["plat_child_price"] = (float)$k["plat_child_price"];
                 $k["settle_child_price"] = (float)$k["settle_child_price"];
-                $k["house_market_price"] = (float)$k["house_market_price"];
                 $k["plat_house_price"] = (float)$k["plat_house_price"];
-                $k["settle_house_price"] = (float)$k["settle_house_price"];
 //                $k["date"] = date("Y-m-d",$k["date"]);
             }
         }
@@ -404,17 +403,39 @@ class ShowGroup
         return json_encode(array("code" => 200,"data" => $output));
     }
 
-    //获取商品页面
+    //商品头部信息显示 20
+    public function goodsHead(){
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"data" => "商品号不能为空"));
+        }
+        $allField = "code,inside_code,inside_title,show_title,check_type";
+        $where = [
+            "code"        => $goodsCode,
+            'is_del'      =>  ['<>',"1"]  //未删除
+        ];
+        $res = db('goods')->field($allField)->where($where)->find();
+        if(empty($res)){
+            return json_encode(array("code" => 403,"data" => "查询错误,商品号不对或者被删除"));
+        }
+        return json_encode(array("code" => 200,"data" => $res));
+    }
+
+    //获取商品页面 辅
     private function getGoodsTab($goodsCode){
         $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
         return $res["tab"];
     }
 
-    //测试页码
+    //测试页码 辅 没用？
     private function checkTab($goodsCode){
         $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
         if($res === null){
 
         }
     }
+
+
+
+
 }

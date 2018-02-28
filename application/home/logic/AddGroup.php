@@ -121,7 +121,8 @@ class AddGroup
             $groupRes = db('goods_group')->insert($groupData);
             $supplyRes = db('goods_supply')->insert($supplyData);
             if ($goodsRes && $groupRes && $supplyRes) {
-                db('goods_create')->insert(array('goods_code' => $goodsCode));
+                db('goods_create')->insert(array('goods_code' => $goodsCode));  //更新页码
+                $this->getShowTitle($goodsCode);    //更新外部标题
                 return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
             } else {
                 return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
@@ -162,6 +163,7 @@ class AddGroup
             if ($groupRes === false) {
                 return json_encode(array("code" => 403, "msg" => "保存错误，请稍后再试"));
             }
+            $this->getShowTitle($goodsCode);    //更新外部标题
             return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
         }
 
@@ -190,6 +192,7 @@ class AddGroup
         if ($tab < 1) {
             db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 1));
         }
+        $this->getShowTitle($goodsCode);    //更新外部标题
         return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
 
     }
@@ -283,8 +286,8 @@ class AddGroup
             return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
         }
         $tab = $this->getGoodsTab($goodsCode);
-        if ($tab < 6) {
-            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 6));
+        if ($tab < 7) {
+            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 7));
         }
         return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
     }
@@ -355,11 +358,6 @@ class AddGroup
     //价格库存添加 11
     public function ratesInventory()
     {
-//        $goodsCode = input('post.goodsCode');
-//        if(empty($goodsCode)){
-//            return json_encode(array("code" => 404,"msg" => "添加商品，商品号不能为空"));
-//        }
-
         $postData = input('post.');
         $goodsCode = $postData["goodsCode"];
         if(empty($goodsCode)){
@@ -370,11 +368,32 @@ class AddGroup
             return json_encode(array("code" => 404, "msg" => "上传参数不能为空"));
         }
         $dateArray = $priData["date"];      //日期数组
+
         $price = $priData["price"];         //价格对象
 
         $bol = true;
         $error = ""; //错误信息
         $data = json_decode(json_encode($price), true);//对象转数组
+        //todo 数据验证
+
+        //todo 儿童和成人同价
+        $groupRes = db('goods_group')->field("child_price_type")->where(array("goods_code" => $goodsCode))->find();
+        if(empty($groupRes)){
+            return json_encode(array("code" => 403, "msg" => "产品查询失败，请联系管理员"));
+        }
+        if($groupRes["child_price_type"] == 0){//无儿童价格
+            $data["child_is_opne"] = 0;
+            $data["market_child_price"] = 0;
+            $data["plat_child_price"] = 0;
+            $data["settle_child_price"] = 0;
+        }else if($groupRes["child_price_type"] == 1){//与成人同价
+            $data["child_is_opne"] = 1;
+            $data["market_child_price"] = $data["market_price"];
+            $data["plat_child_price"] = $data["plat_price"];
+            $data["settle_child_price"] = $data["settle_price"];
+        }
+
+
         foreach ($dateArray as $k) {
             $data["date"] = strtotime($k);//时间戳;
             $res = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->find();
@@ -396,41 +415,9 @@ class AddGroup
         if (!$bol) {
             return json_encode(array("code" => 403, "msg" => "保存日期错误，错误的日期为" . $error . "请再试一次或者联系管理员"));
         }
+        $this->saveGoodsType($goodsCode);//更改商品上线状态
         return json_encode(array("code" => 200, "msg" => "保存成功"));
 
-
-//        $priData = input('post.priData/a');
-//        if(empty($priData)){
-//            return json_encode(array("code" => 403, "msg" => "保存日期不能为空"));
-//        }
-//        $bol = true;
-//        $error = "";
-//        foreach ($priData as $k){
-//
-//            $data = json_decode(json_encode($k),true);//对象转数组
-//            $data["date"] = strtotime(date("Y-m-d", $data["date"]));//时间戳化为整天
-//            $res = db('goods_calendar')->where(array("goods_code" => $goodsCode,"date" => $data["date"]))->find();
-//            if($res){//修改状态
-//                $saveRes = db('goods_calendar')->where(array("goods_code" => $goodsCode,"date" => $data["date"]))->update($data);
-//                if($saveRes === false){
-//                    $bol = false;
-//                    $error .= date("Y-m-d", $data["date"]).",";
-//                }
-//            }else{//添加状态
-//                $data["goods_code"] = $goodsCode;
-//                $AddRes = db('goods_calendar')->insert($data);
-//                if($AddRes === false){
-//                    $bol = false;
-//                    $error .= date("Y-m-d", $data["date"]).",";
-//                }
-//            }
-//        }
-//        if(!$bol){
-//            return json_encode(array("code" => 403, "msg" => "保存日期错误，错误的日期为".$error."请再试一次或者联系管理员"));
-//        }
-//        return json_encode(array("code" => 200, "msg" => "保存成功"));
-
-//
     }
 
     //异步上传图片 100
@@ -566,4 +553,77 @@ class AddGroup
         }
         return true;
     }
+
+    //外部显示标题拼接 主
+    private function getShowTitle($goodsCode){
+        $allField = "a.code,b.main_place,b.service_type,b.play_day";
+        $alias = array("syy_goods" => "a","syy_goods_group" => "b");
+        $join = [['syy_goods_group','a.code = b.goods_code']];
+        $where = [
+            "a.code"        => $goodsCode,
+            'a.is_del'      =>  ['<>',"1"]  //未删除
+        ];
+        $res = db('goods')->alias($alias)->join($join)->field($allField)->where($where)->find();
+        if($res){
+            $mainPlace = $this->getMainPlaceName($res["main_place"]);
+            $serviceType = $this->getServiceTypeName($res["service_type"]);
+            $playDay = "";
+            if($res["play_day"]){
+                $playDay = $res["play_day"]."日";
+            }
+            $data["show_title"] = $mainPlace.$serviceType.$playDay."跟团游";
+            $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($data);
+            if($goodsRes === false){
+                echo json_encode(array("code" => 403, "msg" => "外部标题保存失败，请联系管理员"));
+                die;
+            }
+        }
+    }
+
+    //获取主要景点拼接
+    private function getMainPlaceName($mainPlace){
+        $i = 0;
+        $str = "";
+        $mpArray = json_decode($mainPlace,true);
+        foreach ($mpArray as $k){
+            if(++$i > 3) {
+                break;
+            }
+            $str .= $k["place"]."、";
+        }
+        return $str;
+    }
+
+    //获取服务类型拼接
+    private function getServiceTypeName($serviceType){
+        $str = "";
+        $serviceNameData = array(
+            "checked1" => "100%出团",
+            "checked2" => "无购物",
+            "checked3" => "无自费",
+        );
+        $stArray = json_decode($serviceType,true);
+        foreach ($stArray as $k => $v){
+            if($v == 1){
+                $str .= $serviceNameData[$k];
+            }
+        }
+        return $str;
+    }
+
+    //更改商品保存状态
+    private function saveGoodsType($goodsCode){
+        $where = [
+            "code"        => $goodsCode,
+            'is_del'      =>  ['<>',"1"]  //未删除
+        ];
+        $res = db('goods')->field("check_type")->where($where)->find();
+        if($res && $res["check_type"] == 0){
+            $calendarType = db('goods_calendar')->field("id")->where(array("goods_code" => $goodsCode))->find();
+            if($calendarType){
+                db('goods')->where(array("code" => $goodsCode))->update(array("check_type"=>1));
+            }
+        }
+    }
+
 }
