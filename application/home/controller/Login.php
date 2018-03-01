@@ -13,20 +13,22 @@ class Login extends HomeBase
         $account = input('account');
         $password = input('password');
         $remember = input('remember');
-       
+        // 参数校验
         if($account == '' || $account == null || $password == '' || $password == null){
             return json(array('code' => 404,'msg' => '账号或密码不能为空'));
         }
-        
+        // 
         $data = db('sp')->where(array('account_num' => $account,'pwd' => md5($password)))->find();
         if(empty($data)){
             return json(array('code' => 404,'msg' => '账号或密码不能为空'));
         }
         
         
-
-        return json(array('code' => 202,'msg' => ));
+        return json(array('code' => 202,'msg' =>'登录成功'));
     }
+
+
+
 }
 
  
