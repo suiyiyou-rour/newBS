@@ -205,11 +205,10 @@ class ShowGroup
             return json_encode(array("code" => 201,"data" => array("tab"=>$tab)));
         }
         $array = json_decode($data["charged_item"],true);
-        if(!is_array($array)){
-            return json_encode(array("code" => 403,"msg" => "数据异常，请联系管理员"));
-        }
-        foreach ($array as &$k){
-            $k["place"] = (float)$k["place"];
+        if(is_array($array)){
+            foreach ($array as &$k){
+                $k["place"] = (float)$k["place"];
+            }
         }
         $output["charged_item"] = $array;
         $output["state"]         = '3';

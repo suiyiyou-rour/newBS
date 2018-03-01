@@ -17,9 +17,11 @@ class Group extends HomeBase
     public function index()
     {
 //        $this->dispatcher();
-        $goodsCode = "g001356493";
-        $res = db('goods_group')->field("child_price_type")->where(array("goods_code" => $goodsCode))->find();
-        var_dump($res);
+        $goodsCode = "g001711314";
+        $tab = db('goods_create')->where(array("goods_code" => $goodsCode))->value('tab');
+        if($tab !== null && $tab < 7){
+            echo 1;
+        }
         return;
     }
 
@@ -40,22 +42,22 @@ class Group extends HomeBase
         $where = array();
         $show_title = input("post.show_title");         //随意游产品名称
         if($show_title){
-            $where["a.show_title"] = ['like',$show_title];
+            $where["a.show_title"] = ['like',"%".$show_title."%"];
         }
 
         $inside_title = input("post.inside_title");     //供应商产品名称
         if($inside_title){
-            $where["a.inside_title"] = ['like',$inside_title];
+            $where["a.inside_title"] = ['like',"%".$inside_title."%"];
         }
 
         $begin_address = input("post.begin_address");  //出发地
         if($begin_address){
-            $where["b.begin_address"] = ['like',$begin_address];
+            $where["b.begin_address"] = $begin_address;
         }
 
         $end_address = input("post.end_address");         //目的地
         if($end_address){
-            $where["b.end_address"] = ['like',$end_address];
+            $where["b.end_address"] = $end_address;
         }
 
         $check_type = input("post.check_type");        //审核状态
@@ -75,8 +77,8 @@ class Group extends HomeBase
         $goodsField = "a.code,a.inside_code,a.inside_title,a.show_title,a.check_type";
         $groupField = "b.play_type,b.begin_address,b.child_price_type";
         $allField = $goodsField.','.$groupField;
-
         $count = db('goods')->alias($alias)->where($where)->join($join)->count('a.id');
+
         if(!$count){
             echo json_encode(array("code" => 200,"data" => array("count"=>0)));
             return;
@@ -114,6 +116,7 @@ class Group extends HomeBase
             if(empty($k["plat_house_price"])){
                 $k["plat_house_price"] = "--";
             }
+            $k["date"] = date("Y-m-d",$k["date"]);
 //            $plat_price = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_price > 0')->min('plat_price');
 //            $plat_price ? $k["plat_price"] = $plat_price : $k["plat_price"] = "--";
 //            $platChildPrice  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_child_price > 0')->min('plat_child_price');

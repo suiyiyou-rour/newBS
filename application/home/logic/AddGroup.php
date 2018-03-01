@@ -11,8 +11,8 @@ class AddGroup
     public function dispatcher($state)
     {
         //需要商品code
+        $goodsCode = input('post.goodsCode');
         if ($state != '0' && $state != '11') {
-            $goodsCode = input('post.goodsCode');
             if (empty($goodsCode)) {
                 return json_encode(array("code" => 412, "msg" => "添加商品，商品号不能为空"));
             }
@@ -25,40 +25,53 @@ class AddGroup
         switch ($state) {
             case '0':
                 //基本信息添加
-                return $this->basicInfo();
+                $output = $this->basicInfo();
+                break;
             case '1':
                 //行程信息添加
-                return $this->routeInfo();
+                $output = $this->routeInfo();
+                break;
             case '2':
                 //产品特色添加
-                return $this->sellingPoint();
+                $output = $this->sellingPoint();
+                break;
             case '3':
                 //自费项目添加
-                return $this->chargedItem();
+                $output = $this->chargedItem();
+                break;
             case '4':
                 //费用包含添加
-                return $this->includeCost();
+                $output = $this->includeCost();
+                break;
             case '5':
                 //费用不包含添加
-                return $this->notInCost();
+                $output = $this->notInCost();
+                break;
             case '6':
                 //特殊人群限制添加
-                return $this->specialPeople();
+                $output = $this->specialPeople();
+                break;
             case '7':
                 //预定须知添加
-                return $this->advanceKnow();
+                $output = $this->advanceKnow();
+                break;
             case '11':
                 //价格库存
-                return $this->ratesInventory();
+                $output = $this->ratesInventory();
+                break;
             case '100':
                 //预定须知添加
-                return $this->imageUpload();
+                $output = $this->imageUpload();
+                break;
             case '101':
                 //预定须知添加
-                return $this->imageDel();
+                $output = $this->imageDel();
+                break;
             default:
-                return json_encode(array("code" => 404, "msg" => "参数错误"));
+                $output = json_encode(array("code" => 404, "msg" => "参数错误"));
         }
+        $this->endOperation($goodsCode,$state);//后置方法
+        return json_encode($output);
     }
 
 
@@ -76,7 +89,7 @@ class AddGroup
         if (empty($goodsCode)) {
             $hash = input('post.hash');
             if (!checkFromHash($hash)) {
-                return json_encode(array("code" => 405, "msg" => "您表单提交速度过快，请3秒后重试。"));
+                return array("code" => 405, "msg" => "您表单提交速度过快，请3秒后重试。");
             }
             //数据验证
             $data = $this->basicInfoData();
@@ -84,7 +97,7 @@ class AddGroup
             $result = $validate->scene('addBasicInfo')->check($data);
             if (true !== $result) {
                 // 验证失败 输出错误信息
-                return json_encode(array("code" => 405, "msg" => $validate->getError()));
+                return array("code" => 405, "msg" => $validate->getError());
             }
 
             $goodsCode = createGoodsCode("g");//产品编号
@@ -121,11 +134,10 @@ class AddGroup
             $groupRes = db('goods_group')->insert($groupData);
             $supplyRes = db('goods_supply')->insert($supplyData);
             if ($goodsRes && $groupRes && $supplyRes) {
-                db('goods_create')->insert(array('goods_code' => $goodsCode));  //更新页码
-                $this->getShowTitle($goodsCode);    //更新外部标题
-                return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+                db('goods_create')->insert(array('goods_code' => $goodsCode));  //插入页码表
+                return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
             } else {
-                return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+                return array("code" => 403, "msg" => "数据保存出错，请再试一次");
             }
         } else {
             $data = $this->basicInfoData();
@@ -133,7 +145,7 @@ class AddGroup
             $result = $validate->scene('addBasicInfo')->check($data);
             if (true !== $result) {
                 // 验证失败 输出错误信息
-                return json_encode(array("code" => 405, "msg" => $validate->getError()));
+                return array("code" => 405, "msg" => $validate->getError());
             }
             $goodsData["contact_code"] = $data["contact_code"]; //合同编码  （主）必须
             $goodsData["inside_code"] = $data["inside_code"]; //内部编号   （主）
@@ -158,17 +170,13 @@ class AddGroup
             $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
             $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($groupData);
             if ($goodsRes === false) {
-                return json_encode(array("code" => 403, "msg" => "保存出错，请稍后再试"));
+                return array("code" => 403, "msg" => "保存出错，请稍后再试");
             }
             if ($groupRes === false) {
-                return json_encode(array("code" => 403, "msg" => "保存错误，请稍后再试"));
+                return array("code" => 403, "msg" => "保存错误，请稍后再试");
             }
-            $this->getShowTitle($goodsCode);    //更新外部标题
-            return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+            return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
         }
-
-
-//        echo json_encode(array("code" => 200,"msg" => $data));
     }
 
     //行程信息添加 1
@@ -182,18 +190,13 @@ class AddGroup
         $result = $validate->scene('addRouteInfo')->check($data);
         if (true !== $result) {
             // 验证失败 输出错误信息
-            return json_encode(array("code" => 405, "msg" => $validate->getError()));
+            return array("code" => 405, "msg" => $validate->getError());
         }
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
         if ($groupRes === false) {
-            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+            return array("code" => 403, "msg" => "数据保存出错，请再试一次");
         }
-        $tab = $this->getGoodsTab($goodsCode);
-        if ($tab < 1) {
-            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 1));
-        }
-        $this->getShowTitle($goodsCode);    //更新外部标题
-        return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
 
     }
 
@@ -205,11 +208,11 @@ class AddGroup
         $data = input('post.');
         //图片数组
         if (empty($data["fileList"]) || empty($data["feature_reasons"])) {
-            return json_encode(array("code" => 404, "msg" => "上传参数错误1"));
+            return array("code" => 404, "msg" => "上传参数错误1");
         }
         $fileList = objSetArray($data["fileList"]);
         if (empty($fileList[0]["name"])) {
-            return json_encode(array("code" => 404, "msg" => "上传参数错误2"));
+            return array("code" => 404, "msg" => "上传参数错误2");
         }
         $imageArray = array();
         foreach ($fileList as $k) {
@@ -229,21 +232,16 @@ class AddGroup
         $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
         $supplyRes = db('goods_supply')->where(array("goods_code" => $goodsCode))->update($supplyData);
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($groupData);
-//        db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 3));//跳页
         if ($goodsRes === false) {
-            return json_encode(array("code" => 403, "msg" => "首图保存出错，请稍后再试"));
+            return array("code" => 403, "msg" => "首图保存出错，请稍后再试");
         }
         if ($supplyRes === false) {
-            return json_encode(array("code" => 403, "msg" => "图片保存错误，请稍后再试"));
+            return array("code" => 403, "msg" => "图片保存错误，请稍后再试");
         }
         if ($groupRes === false) {
-            return json_encode(array("code" => 403, "msg" => "推荐理由保存错误，请稍后再试"));
+            return array("code" => 403, "msg" => "推荐理由保存错误，请稍后再试");
         }
-        $tab = $this->getGoodsTab($goodsCode);
-        if ($tab < 3) {
-            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 3));
-        }
-        return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
 
 
     }
@@ -256,15 +254,15 @@ class AddGroup
         $data = input('post.');
         $groupData["charged_item"] = $data["charged_item"];
         if (empty($groupData["charged_item"])) {
-            $groupData["charged_item"] = "";
+            $groupData["charged_item"] = array();
         }
 
         $groupData["charged_item"] = json_encode($groupData["charged_item"]); //自费项目
         $res = db('goods_group')->where(array("goods_code" => $goodsCode))->update($groupData);
-        if (!$res) {
-            return json_encode(array("code" => 403, "msg" => "推荐理由保存错误，请稍后再试"));
+        if ($res === false) {
+            return array("code" => 403, "msg" => "推荐理由保存错误，请稍后再试");
         }
-        return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
     }
 
     //费用包含添加 4
@@ -278,18 +276,14 @@ class AddGroup
 //        $result = $validate->scene('addIncludeCost')->check($data);
 //        if(true !== $result){
 //            // 验证失败 输出错误信息
-//            return json_encode(array("code" => 405,"msg" => $validate->getError()));
+//            return array("code" => 405,"msg" => $validate->getError());
 //        }
 
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
         if ($groupRes === false) {
-            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+            return array("code" => 403, "msg" => "数据保存出错，请再试一次");
         }
-        $tab = $this->getGoodsTab($goodsCode);
-        if ($tab < 7) {
-            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 7));
-        }
-        return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
     }
 
     //费用不包含添加 5
@@ -299,7 +293,7 @@ class AddGroup
 
         $post = input("post.");
         if (empty($post["cost_not_include"])) {
-            return json_encode(array("code" => 404, "msg" => "费用不包含不能为空"));
+            return array("code" => 404, "msg" => "费用不包含不能为空");
         }
         $cost_not_include = json_encode($post["cost_not_include"]);
 
@@ -307,11 +301,10 @@ class AddGroup
         $data["single_supplement"] = $array["room"]["one"];     //单房差
         $data["cost_not_include"] = $cost_not_include;  //费用不包含
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
-        if ($groupRes) {
-            return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
-        } else {
-            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+        if ($groupRes === false) {
+            return array("code" => 403, "msg" => "数据保存出错，请再试一次");
         }
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
     }
 
     //特殊人群限制添加 6
@@ -322,14 +315,13 @@ class AddGroup
         $postData = input("post.");
         $data["crowd_limit"] = json_encode($postData["crowd_limit"]);
         if (empty($data["crowd_limit"])) {
-            return json_encode(array("code" => 404, "msg" => "不能为空"));
+            return array("code" => 404, "msg" => "不能为空");
         }
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
-        if ($groupRes) {
-            return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
-        } else {
-            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+        if ($groupRes === false) {
+            return array("code" => 403, "msg" => "数据保存出错，请再试一次");
         }
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
 
     }
 
@@ -341,17 +333,13 @@ class AddGroup
         $postData = input("post.");
         $data["book_notice"] = json_encode($postData["book_notice"]);
         if (empty($data["book_notice"])) {
-            return json_encode(array("code" => 404, "msg" => "不能为空"));
+            return array("code" => 404, "msg" => "不能为空");
         }
         $groupRes = db('goods_group')->where(array("goods_code" => $goodsCode))->update($data);
         if ($groupRes === false) {
-            return json_encode(array("code" => 403, "msg" => "数据保存出错，请再试一次"));
+            return array("code" => 403, "msg" => "数据保存出错，请再试一次");
         }
-        $tab = $this->getGoodsTab($goodsCode);
-        if ($tab < 6) {
-            db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 7));
-        }
-        return json_encode(array("code" => 200, "data" => array("goodsCode" => $goodsCode)));
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
 
     }
 
@@ -361,11 +349,11 @@ class AddGroup
         $postData = input('post.');
         $goodsCode = $postData["goodsCode"];
         if(empty($goodsCode)){
-            return json_encode(array("code" => 412, "msg" => "商品号上传不能为空"));
+            return array("code" => 412, "msg" => "商品号上传不能为空");
         }
         $priData = $postData["priData"];
         if (empty($priData["date"]) || empty($priData["price"])) {
-            return json_encode(array("code" => 404, "msg" => "上传参数不能为空"));
+            return array("code" => 404, "msg" => "上传参数不能为空");
         }
         $dateArray = $priData["date"];      //日期数组
 
@@ -379,7 +367,7 @@ class AddGroup
         //todo 儿童和成人同价
         $groupRes = db('goods_group')->field("child_price_type")->where(array("goods_code" => $goodsCode))->find();
         if(empty($groupRes)){
-            return json_encode(array("code" => 403, "msg" => "产品查询失败，请联系管理员"));
+            return array("code" => 403, "msg" => "产品查询失败，请联系管理员");
         }
         if($groupRes["child_price_type"] == 0){//无儿童价格
             $data["child_is_opne"] = 0;
@@ -413,31 +401,31 @@ class AddGroup
             }
         }
         if (!$bol) {
-            return json_encode(array("code" => 403, "msg" => "保存日期错误，错误的日期为" . $error . "请再试一次或者联系管理员"));
+            return array("code" => 403, "msg" => "保存日期错误，错误的日期为" . $error . "请再试一次或者联系管理员");
         }
         $this->saveGoodsType($goodsCode);//更改商品上线状态
-        return json_encode(array("code" => 200, "msg" => "保存成功"));
+        return array("code" => 200, "msg" => "保存成功");
 
     }
 
     //异步上传图片 100
     private function imageUpload()
     {
-//        return json_encode(array("code" => 404,"msg" => "上传大小错误"));
+//        return array("code" => 404,"msg" => "上传大小错误");
         //todo 商品号
         $goodsCode = input('post.goodsCode');
-//        return json_encode(array("code" => 404,"msg" => $goodsCode));
+//        return array("code" => 404,"msg" => $goodsCode);
         $imgLimit = config("imageUpLimit");
         $file = request()->file('file');
         if (empty($file)) {
-            return json_encode(array("code" => 404, "msg" => "参数错误"));
+            return array("code" => 404, "msg" => "参数错误");
         }
         $info = $file->validate($imgLimit)->move(ROOT_PATH . 'public' . DS . 'image' . DS . 'group');
         if ($info) {
-            return json_encode(array("code" => 200, "data" => array("name" => 'group' . DS . $info->getSaveName(), "goodsCode" => $goodsCode)));
+            return array("code" => 200, "data" => array("name" => 'group' . DS . $info->getSaveName(), "goodsCode" => $goodsCode));
         } else {
             // 上传失败获取错误信息
-            return json_encode(array("code" => 404, "msg" => $file->getError()));
+            return array("code" => 404, "msg" => $file->getError());
         }
     }
 
@@ -446,7 +434,7 @@ class AddGroup
     {
         $name = input("post.name");
         $goodsCode = input("post.goodsCode");
-        return json_encode(array("code" => 200, "data" => $name));
+        return array("code" => 200, "data" => $name);
     }
 
 
@@ -530,12 +518,6 @@ class AddGroup
     }
 
 
-    //获取商品页面
-    private function getGoodsTab($goodsCode)
-    {
-        $res = db('goods_create')->field("tab")->where(array("goods_code" => $goodsCode))->find();
-        return $res["tab"];
-    }
 
     //商品修改状态检测
     private function checkGoodsType($goodsCode)
@@ -611,7 +593,38 @@ class AddGroup
         return $str;
     }
 
-    //更改商品保存状态
+    //后置方法 步骤操作结束后完成的事
+    private function endOperation($goodsCode,$state){
+        //更新外部标题
+        if($state == 0 || $state == 1){
+            $this->getShowTitle($goodsCode);
+        }
+        $this->lastEditTime($goodsCode);
+        $tab = db('goods_create')->where(array("goods_code" => $goodsCode))->value('tab');
+        /**
+         * state    0  1  2  3  4  5  6  7
+         * 必须     1  1  1  0  1  0  0  1
+         * tab      0  1  3     7
+         */
+        if($tab !== null && $tab < 7){
+            //更新tab
+            if($state == 1){
+                if ($tab < 1) {
+                    db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 1));
+                };
+            }else if($state == 2){
+                if ($tab < 3) {
+                    db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 3));
+                };
+            }else if($state == 4){
+                if ($tab < 7) {
+                    db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 7));
+                };
+            }
+        }
+    }
+
+    //更改商品保存状态 从已编辑到保存 0 - 1
     private function saveGoodsType($goodsCode){
         $where = [
             "code"        => $goodsCode,
@@ -625,5 +638,20 @@ class AddGroup
             }
         }
     }
+
+    //更新最后一次编辑时间
+    private function lastEditTime($goodsCode){
+        $where = [
+            "code"              => $goodsCode,
+            "is_del"            =>  ['<>',"1"],  //未删除
+        ];
+        $res = db('goods')->field("id")->where($where)->find();
+        if($res){
+            $data["last_edit_time"] = time();
+            db('goods')->where(array("code" => $goodsCode))->update($data);
+        }
+    }
+
+
 
 }
