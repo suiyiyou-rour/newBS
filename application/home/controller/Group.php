@@ -39,7 +39,8 @@ class Group extends HomeBase
 
     //商品列表显示
     public function goodsList(){
-        $where = array();
+        $where["a.goods_type"] = "1";//跟团游
+
         $show_title = input("post.show_title");         //随意游产品名称
         if($show_title){
             $where["a.show_title"] = ['like',"%".$show_title."%"];

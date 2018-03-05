@@ -60,11 +60,11 @@ class AddGroup
                 $output = $this->ratesInventory();
                 break;
             case '100':
-                //预定须知添加
+                //图片上传
                 $output = $this->imageUpload();
                 break;
             case '101':
-                //预定须知添加
+                //图片删除
                 $output = $this->imageDel();
                 break;
             default:
@@ -105,6 +105,7 @@ class AddGroup
             $goodsData["code"] = $goodsCode;//产品编号
             $goodsData["sp_code"] = session("sp.code");//产品编号
             $goodsData["create_time"] = time();
+            $goodsData["goods_type"] = 1;//跟团游
             $goodsData["contact_code"] = $data["contact_code"]; //合同编码  （主）必须
             $goodsData["inside_code"] = $data["inside_code"]; //内部编号   （主）
             $goodsData["inside_title"] = $data["inside_title"]; //内部显示标题   （主）必须
@@ -438,7 +439,7 @@ class AddGroup
     }
 
 
-    //基本信息数据接收
+    //基本信息数据接收 0
     private function basicInfoData()
     {
         $gain = ['contact_code', 'inside_code', 'inside_title', 'subtitle', 'service_type', 'line_type', 'play_type', 'begin_address', 'end_address', 'main_place', 'advance_time', 'online_type', 'on_time', 'off_time', 'service_tel', 'refund_type', 'refund_info', 'rate'];
@@ -463,29 +464,29 @@ class AddGroup
         return $data;
     }
 
-    //行程信息数据接收
+    //行程信息数据接收 1
     private function routeInfoData()
     {
         $gain = ['play_day', 'go_trans', 'back_trans', 'go_trans_cost', 'back_trans_cost', 'gather_place', 'route_info'];
         $data = Request::instance()->only($gain, 'post');//        $data = input('post.');+
         if (empty($data["gather_place"])) {
-            $data["gather_place"] = "";
+            $data["gather_place"] = "";     //集合地点
         }
         if (empty($data["route_info"])) {
-            $data["route_info"] = "";
+            $data["route_info"] = "";   //行程详细
         }
         $data["gather_place"] = json_encode($data["gather_place"]); //集合地点
         $data["route_info"] = json_encode($data["route_info"]); //行程详细
         return $data;
     }
 
-    //产品特色数据接收
+    //产品特色数据接收 2
     private function sellingPointData()
     {
         $gain = ['fileList', 'feature_reasons'];
         $data = Request::instance()->only($gain, 'post');//        $data = input('post.');+
         if (empty($data["feature_reasons"])) {
-            $data["feature_reasons"] = "";
+            $data["feature_reasons"] = "";      //推荐理由
         }
         $data["feature_reasons"] = json_encode($data["feature_reasons"]); //推荐理由
 
