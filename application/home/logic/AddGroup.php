@@ -68,7 +68,7 @@ class AddGroup
                 $output = $this->imageDel();
                 break;
             default:
-                $output = json_encode(array("code" => 404, "msg" => "参数错误"));
+                $output = array("code" => 404, "msg" => "参数错误");
         }
         $this->endOperation($goodsCode,$state);//后置方法
         return json_encode($output);

@@ -11,7 +11,10 @@ class Index extends HomeBase
 
     public function index()
     {
-        echo "home/index/base";
+//        echo "home/index/base";
+
+        var_dump(createGoodsCode());
+
     }
 
 
