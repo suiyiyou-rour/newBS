@@ -161,11 +161,11 @@ class AddTicket
         $ticketData["entrance_place"]   =   $data["entrance_place"];//入园地址     (副)必须
 
         $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
-        $groupRes = db('goods_ticket')->where(array("goods_code" => $goodsCode))->update($ticketData);
+        $ticketRes = db('goods_ticket')->where(array("goods_code" => $goodsCode))->update($ticketData);
         if ($goodsRes === false) {
             return array("code" => 403, "msg" => "保存出错，请稍后再试");
         }
-        if ($groupRes === false) {
+        if ($ticketRes === false) {
             return array("code" => 403, "msg" => "保存错误，请稍后再试");
         }
 
@@ -179,14 +179,16 @@ class AddTicket
         if($priceType != "1" && $priceType != "2"){//1价格日历 2有效期
             return array("code" => 403, "msg" => "日期模式错误");
         }
-        if($priceType == "1"){
+        if($priceType == "2"){
             return $this->rulesSetIndate();
+        }else{
+            return $this->rulesSetCalendar();
         }
-        return $this->rulesSetCalendar();
+
+
     }
 
-
-    //有效期 tab2 设置
+    //有效期 tab2 设置 002
     private function rulesSetIndate(){
         $goodsCode = input('post.goodsCode');
         //数据验证
@@ -196,10 +198,51 @@ class AddTicket
         if (true !== $result) {
             return array("code" => 405, "msg" => $validate->getError());
         }
-        return "";
+        //主表添加数据
+        $goodsData["online_type"]       =   $data["online_type"];   //上线类型    (主)
+        $goodsData["offline_type"]      =   $data["offline_type"];  //上线类型    (主)
+        $goodsData["on_time"]           =   $data["on_time"];       //上线时间     (主)
+        $goodsData["off_time"]          =   $data["off_time"];       //下线时间     (主)
+        $goodsData["price_type"]        =   $data["price_type"];    //价格类型  (主)必须
+        $goodsData["stock_type"]        =   $data["stock_type"];    //库存模式  (主)必须
+        //副表添加数据
+        $ticketData["usable_date"]      =   $data["usable_date"];   //可用日期  (副)必须        --价格日历没有
+        $ticketData["disabled_date"]    =   $data["disabled_date"];   //不可用日期  (副)        --价格日历没有
+        $ticketData["refund"]           =   $data["refund"];        //退款设置   (副)必须
+        $ticketData["refund_info"]      =   $data["refund_info"];   //退款设置   (副)
+        //有效期表数据
+        $indateData["begin_date"]       =   $data["begin_date"];    //有效期开始时间 (indate)必须 --有效期模式没有
+        $indateData["end_date"]         =   $data["end_date"];      //有效期开始时间 (indate)必须 --有效期模式没有
+        $indateData["stock_num"]        =   $data["stock_num"];     //库存 必须 （indate）有效期  （价-主）总库存
+        $indateData["plat_price"]       =   $data["plat_price"];    //价格       （indate）必须
+        $indateData["settle_price"]     =   $data["settle_price"];  //结算价格   （indate）必须
+        $indateData["market_price"]     =   $data["market_price"];  //市场价格   （indate）必须
+
+        $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
+        $ticketRes = db('goods_ticket')->where(array("goods_code" => $goodsCode))->update($ticketData);
+
+        $indateCheck = db('goods_indate')->field("id")->where(array("goods_code" => $goodsCode))->find();
+        if($indateCheck){
+            $indateRes = db('goods_indate')->where(array("goods_code" => $goodsCode))->update($indateData);
+        }else{
+            $indateData["goods_code"] = $goodsCode;
+            $indateRes = db('goods_indate')->insert($indateData);
+        }
+
+        if ($goodsRes === false) {
+            return array("code" => 403, "msg" => "保存出错，请稍后再试");
+        }
+        if ($ticketRes === false) {
+            return array("code" => 403, "msg" => "保存错误，请稍后再试");
+        }
+        if ($indateRes === false) {
+            return array("code" => 403, "msg" => "保存错误，请稍后再试");
+        }
+        $this->saveGoodsTypeYx($goodsCode);//更改商品状态
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
     }
 
-    //价格日历 tab2 设置
+    //价格日历 tab2 设置 001
     private function rulesSetCalendar(){
         $goodsCode = input('post.goodsCode');
         //数据验证
@@ -209,11 +252,77 @@ class AddTicket
         if (true !== $result) {
             return array("code" => 405, "msg" => $validate->getError());
         }
+        //主表添加数据
+        $goodsData["online_type"]       =   $data["online_type"];   //上线类型  (主)
+        $goodsData["offline_type"]      =   $data["offline_type"];  //上线类型  (主)
+        $goodsData["on_time"]           =   $data["on_time"];        //上线时间  (主)
+        $goodsData["off_time"]          =   $data["on_time"];        //下线时间  (主)
+        $goodsData["price_type"]        =   $data["price_type"];    //价格类型  (主)必须
+        $goodsData["stock_type"]        =   $data["stock_type"];    //库存模式  (主)必须
+        $goodsData["stock_num"]         =   $data["stock_num"];     //库存(主)  必须
+        //副表添加数据
+        $ticketData["refund"]               =   $data["refund"];          //退款设置 (副)必须
+        $ticketData["refund_info"]          =   $data["refund_info"];    //退款设置 (副)
+        $ticketData["effective_days"]      =   $data["effective_days"]; //有效天数 (副)     --有效期模式没有
 
+        $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
+        $ticketRes = db('goods_ticket')->where(array("goods_code" => $goodsCode))->update($ticketData);
+        if ($goodsRes === false) {
+            return array("code" => 403, "msg" => "保存出错，请稍后再试");
+        }
+        if ($ticketRes === false) {
+            return array("code" => 403, "msg" => "保存错误，请稍后再试");
+        }
+        //价格日历
+        $calendarData["date"]                =   $data["date"];
+        $calendarData["stock_num"]          =   $data["stock_num_day"]; //日库存    （calendar）必须
+        $calendarData["plat_price"]         =   $data["plat_price"];    //价格       （calendar）必须
+        $calendarData["settle_price"]       =   $data["settle_price"];  //结算价格   （calendar）必须
+        $calendarData["market_price"]       =   $data["market_price"];  //市场价格   （calendar）必须
 
-        return "";
+        $calendaRes = $this->upDateCalendar($calendarData,$goodsCode);
+        if($calendaRes !== true){
+            return $calendaRes;
+        }
+        $this->saveGoodsType($goodsCode);//更改商品状态
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
     }
 
+    //价格日历上传  (辅助)
+    private function upDateCalendar($priData,$goodsCode){
+        $dateArray = $priData["date"];      //日期数组
+        if(empty($dateArray)){
+            return array("code" => 403, "msg" => "日期不能为空");
+        }
+        $bol = true;
+        $error = ""; //错误信息
+        foreach ($dateArray as $k) {
+            $data["date"]           =   strtotime($k);//时间戳;
+            $data["stock_num"]      =   $priData["stock_num"]; //日库存
+            $data["plat_price"]     =   $priData["plat_price"]; //价格
+            $data["settle_price"]   =   $priData["settle_price"]; //结算价格
+            $data["market_price"]   =   $priData["market_price"]; //市场价格
+            $res = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->find();
+            if ($res) {//修改状态
+                $saveRes = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->update($data);
+                if ($saveRes === false) {
+                    $bol = false;
+                    $error .= $data["date"] . ",";
+                }
+            } else {//添加状态
+                $data["goods_code"] = $goodsCode;
+                $AddRes = db('goods_calendar')->insert($data);
+                if ($AddRes === false) {
+                    $bol = false;
+                    $error .= $data["date"] . ",";
+                }
+            }
+        }
+        if (!$bol) {
+            return array("code" => 403, "msg" => "保存日期错误，错误的日期为" . $error . "请再试一次或者联系管理员");
+        }
+        return true;
+    }
 
     //价格库存 11
     public function ratesInventory()
@@ -298,35 +407,66 @@ class AddTicket
         return $data;
     }
 
-    //价格日历 tab2 数据接收
+    //价格日历 tab2 数据接收 001
     private function rulesSetCalendarData()
     {
-        $gain = ['price_type','effective_days','stock_num','refund','refund_info','online_type','offline_type','on_time','off_time'];
+        $gain = ['price_type','effective_days','stock_type','stock_num','stock_num_day','date','price','refund','refund_info','online_type','offline_type','on_time','off_time'];
         $data = Request::instance()->only($gain, 'post');//        $data = input('post.');
+        if(empty($data["refund_info"])){
+            $data["refund_info"] = "";
+        }
+        $data["refund_info"] = json_encode($data["refund_info"]);
+        if($data["stock_type"] == 1 || $data["stock_type"] == 3){    //无限库存或者日库存模式
+            $data["stock_num"] = 0;
+        }
+        if(empty($data["price"])){    //价格
+            $data["plat_price"] = "";
+            $data["settle_price"] = "";
+            $data["market_price"] = "";
+        }else{
+            $data["plat_price"] = $data["price"]["plat_price"];
+            $data["settle_price"] = $data["price"]["settle_price"];
+            $data["market_price"] = $data["price"]["market_price"];
+        }
+        if(empty($data["date"])){
+            $data["date"] = [];
+        }
         return $data;
     }
 
-    //有效期 tab2 数据接收
+    //有效期 tab2 数据接收 002
     private function rulesSetIndateData()
     {
-        $gain = ['price_type', 'usable_date', 'disabled_date','stock_num', 'plat_price', 'settle_price','market_price','refund','refund_info','online_type','offline_type','on_time','off_time'];
+        $gain = ['price_type', 'usable_date', 'begin_date','end_date','disabled_date','stock_type','stock_num', 'plat_price', 'settle_price','market_price','refund','refund_info','online_type','offline_type','on_time','off_time'];
         $data = Request::instance()->only($gain, 'post');//        $data = input('post.');
-        //todo 有效期时间段没接收
+        //有效期时间段没接收 online_time
         if (empty($data["usable_date"])) {
             $data["usable_date"] = ""; //可以用日期
         }
         if (empty($data["disabled_date"])) {
             $data["disabled_date"] = ""; //不可用日期
         }
+        if(empty($data["refund_info"])){
+            $data["refund_info"] = "";
+        }
+//        if(empty($data["online_time"][0])){
+//            $data["begin_date"] = "";
+//        }else{
+//            $data["begin_date"] = $data["online_time"][0];//有效期开始时间
+//        }
+//        if(empty($data["online_time"][1])){
+//            $data["end_date"] = "";
+//        }else{
+//            $data["end_date"] = $data["online_time"][1];//有效期结束时间
+//        }
+        if($data["stock_type"] == 1){    //无限库存
+            $data["stock_num"] = 0;
+        }
         $data["usable_date"] = json_encode($data["usable_date"]);
         $data["disabled_date"] = json_encode($data["disabled_date"]);
+        $data["refund_info"] = json_encode($data["refund_info"]);
         return $data;
     }
-
-
-
-
-
 
 
     //商品修改状态检测
@@ -346,7 +486,6 @@ class AddTicket
         return true;
     }
 
-
     //后置方法 步骤操作结束后完成的事
     private function endOperation($goodsCode,$state){
         $this->lastEditTime($goodsCode);
@@ -365,7 +504,7 @@ class AddTicket
         }
     }
 
-    //更改商品保存状态 从已编辑到保存 0 - 1
+    //更改商品保存状态(价格日历) 从已编辑到保存 0 - 1
     private function saveGoodsType($goodsCode){
         $where = [
             "code"        => $goodsCode,
@@ -380,6 +519,22 @@ class AddTicket
         }
     }
 
+    //更改商品保存状态（有效期）
+    private function saveGoodsTypeYx($goodsCode){
+        $where = [
+            "code"        => $goodsCode,
+            'is_del'      =>  ['<>',"1"]  //未删除
+        ];
+        $res = db('goods')->field("check_type")->where($where)->find();
+        if($res && $res["check_type"] == 0){
+            $indateType = db('goods_indate')->field("id")->where(array("goods_code" => $goodsCode))->find();
+            if($indateType){
+                db('goods')->where(array("code" => $goodsCode))->update(array("check_type"=>1));
+            }
+        }
+    }
+
+
     //更新最后一次编辑时间
     private function lastEditTime($goodsCode){
         $where = [
@@ -392,7 +547,5 @@ class AddTicket
             db('goods')->where(array("code" => $goodsCode))->update($data);
         }
     }
-
-
 
 }

@@ -31,20 +31,23 @@ class Ticket extends Validate
         'entrance_place'    =>  'require',                     //入园地址     (副)必须
 
         //价格模式
-        'price_type'        =>  'require|max:1|number',                 //价格类型  (副)必须
+        'price_type'        =>  'require|max:1|number',                 //价格类型  (主)必须
+        'begin_date'        =>  'require|number|max:11',                //  有效期开始时间 (indate)必须 --价格日历没有
+        'end_date'          =>  'require|number|max:11',                //`有效期结束时间 (indate)必须 --价格日历没有
         'effective_days'    =>  'number|between:1,999',                 //有效天数  (副)            --有效期模式没有
         'usable_date'       =>  'require|max:128',                      //可用日期  (副)必须        --价格日历没有
-        'stock_num'         =>  'require|number|between:-1,999999',   //库存 必须 （indate）有效期  （价-主）总库存
-        'plat_price'        =>  'require|number|between:0,999999',    //价格       有效期(必需)   --价格日历没有（分接口）
-        'settle_price'      =>  'require|number|between:0,999999',    //结算价格   有效期(必需)   --价格日历没有（分接口）
-        'market_price'      =>  'require|number|between:0,999999',    //市场价格   有效期(必需)   --价格日历没有（分接口）
+        'stock_type'        =>  'require|max:1|number',                 //库存模式  (主)必须
+        'stock_num'         =>  'require|number|between:0,999999',   //库存 必须 （indate）有效期  （价-主）总库存
+        'stock_num_day'     =>  'require|number|between:0,999999',  //日库存 （价格日历）        --有效期模式没有
+        'plat_price'        =>  'require|number|between:0,999999',    //价格       （indate）必须   --价格日历没有（分接口）
+        'settle_price'      =>  'require|number|between:0,999999',    //结算价格   （indate）必须   --价格日历没有（分接口）
+        'market_price'      =>  'require|number|between:0,999999',    //市场价格   （indate）必须   --价格日历没有（分接口）
         'refund'            =>  'require|max:1|number',                //退款设置    (副)必须
         'refund_info'       =>  'max:128',                              //退款设置     (副)
         'online_type'       =>  'require|max:1|number',                //上线类型    (主)
         'offline_type'      =>  'require|max:1|number',                //下线类型    (主)
         'on_time'           =>  'number|max:11',                        //上线时间     (主)
         'off_time'          =>  'number|max:11',                        //下线时间     (主)
-
 
 
 
@@ -98,13 +101,25 @@ class Ticket extends Validate
         'price_type.require'        =>  '价格类型是必须的',
         'price_type.max'            =>  '价格类型格式错误',
         'price_type.number'         =>  '价格类型格式错误',
-        'effective_days.number'         =>  '有效天数必须是数字',
-        'effective_days.between'        =>  '有效天数不能超过999',
+        'begin_date.require'        =>  '有效期时间段格式错误',
+        'begin_date.max'            =>  '有效期时间段格式错误',
+        'begin_date.number'         =>  '有效期时间段格式错误',
+        'end_date.require'          =>  '有效期时间段格式错误',
+        'end_date.max'              =>  '有效期时间段格式错误',
+        'end_date.number'           =>  '有效期时间段格式错误',
+        'effective_days.number'     =>  '有效天数必须是数字',
+        'effective_days.between'    =>  '有效天数不能超过999',
         'usable_date.require'       =>  '可用日期是必须的',
         'usable_date.max'           =>  '身份证限制不能超过128个字符',
+        'stock_type.require'        =>  '库存模式是必须的',
+        'stock_type.max'            =>  '库存模式格式错误',
+        'stock_type.number'         =>  '库存模式格式错误',
         'stock_num.require'         =>  '库存是必须的',
         'stock_num.number'          =>  '库存必须是数字',
         'stock_num.between'         =>  '库存不能超过999999',
+        'stock_num_day.require'     =>  '日库存是必须的',
+        'stock_num_day.number'      =>  '日库存必须是数字',
+        'stock_num_day.between'     =>  '日库存不能超过999999',
         'plat_price.require'        =>  '平台价格是必须的',
         'plat_price.number'         =>  '平台价格必须是数字',
         'plat_price.between'        =>  '平台价格不能超过999999',
@@ -138,11 +153,10 @@ class Ticket extends Validate
         //购买使用说明
         'addBuyUsed'     =>  ['advance_time', 'contact_need', 'player_info', 'min_buy_num', 'max_buy_num', 'mobile_limit', 'identity_limit', 'entrance_time', 'entrance_place'],
         //价格模式(有效)
-        'AddRulesSetIndate'     =>  ['price_type', 'usable_date', 'stock_num', 'plat_price', 'settle_price','market_price','refund','refund_info','online_type','offline_type','on_time','off_time'],
+        'AddRulesSetIndate'     =>  ['price_type', 'begin_date','end_date','usable_date', 'stock_type','stock_num', 'plat_price', 'settle_price','market_price','refund','refund_info','online_type','offline_type','on_time','off_time'],
         //价格模式(日历)
-        'AddRulesSetCalendar'   =>  ['price_type','effective_days','stock_num','refund','refund_info','online_type','offline_type','on_time','off_time'],
+        'AddRulesSetCalendar'   =>  ['price_type','effective_days','stock_type','stock_num','stock_num_day','plat_price','settle_price','market_price','refund','refund_info','online_type','offline_type','on_time','off_time'],
     ];
-
 
 
 

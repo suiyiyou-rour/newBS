@@ -48,6 +48,70 @@ class Ticket extends HomeBase
 
     }
 
+    //列表显示
+    public function goodsList(){
+        $where["a.goods_type"] = "2";//跟团游
+
+        $show_title = input("post.show_title");         //随意游产品名称
+        if($show_title){
+            $where["a.show_title"] = ['like',"%".$show_title."%"];
+        }
+
+        $place_name = input("post.place_name");         //景点名称
+        if($place_name){
+            $where["b.place_name"] = ['like',"%".$place_name."%"];
+        }
+
+        $check_type = input("post.check_type");        //审核状态
+        if($check_type){    //0全查
+            $where["a.check_type"] = $check_type;
+        }else{
+            $where["a.check_type"] = ['<>',0];
+        }
+
+        $where["a.sp_code"] = session("sp.code");   //供应商
+        $page = input("post.page");        //页码
+        if(empty($page)){
+            $page = 1;
+        }
+
+
+        $join = [['syy_goods_ticket b','a.code = b.goods_code']];
+        $goodsField = "a.code,a.show_title,a.check_type,a.price_type";
+        $groupField = "b.goods_class,b.place_name,b.ticket_type";
+        $allField = $goodsField.','.$groupField;
+
+        $count = db('goods')->alias("a")->where($where)->join($join)->count('a.id');
+        if(!$count){
+            echo json_encode(array("code" => 200,"data" => array("count"=>0)));
+            return;
+        }
+//
+        $res = db('goods')->alias("a")->field($allField)->where($where)->join($join)->order('a.id desc')->page($page,10)->select();
+        foreach ($res as &$k){
+            if($k["price_type"] == 1){          //价格日历date
+                $dateArray = db('goods_calendar')->field("MIN(date) as minDate,MAX(date) as maxDate")->where(array("goods_code"=>$k["code"]))->select();
+                if($dateArray){
+                    $k["minDate"] = date("Y-m-d",$dateArray[0]["minDate"]);
+                    $k["maxDate"] = date("Y-m-d",$dateArray[0]["maxDate"]);
+                }
+            }else if($k["price_type"] == 2){    //有效期
+                $indateArray = db('goods_indate')->field("begin_date,end_date")->where(array("goods_code"=>$k["code"]))->find();
+                if($indateArray){
+                    $k["begin_date"] = date("Y-m-d",$indateArray["begin_date"]);
+                    $k["end_date"] = date("Y-m-d",$indateArray["end_date"]);
+                }
+            }
+            $k["place_name"] = json_decode($k["place_name"],true);
+        }
+
+        $output["list"]  =  $res;
+        $output["count"]  =  $count;
+        echo json_encode(array("code" => 200,"data" => $output));
+        return;
+
+    }
+
 
 
 

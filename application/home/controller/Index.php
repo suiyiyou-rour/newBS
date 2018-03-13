@@ -12,8 +12,10 @@ class Index extends HomeBase
     public function index()
     {
 //        echo "home/index/base";
-
-        var_dump(createGoodsCode());
+        $k =array("id"=>"k","name"=>"k");
+        $v =array("name"=>"v","id"=>"x");
+        $kk = array_merge($k,$v);
+        var_dump($kk);
 
     }
 
