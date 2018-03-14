@@ -30,7 +30,12 @@ class Goods
 
     //门票
     public function ticket($operation,$state){
-        return "ticket";
+        $array = array('Add','Show','Option');
+        if(in_array($operation,$array)){
+            return \think\Loader::model($operation.'Ticket','logic')->dispatcher($state);
+        }else{
+            return json_encode(array("code" => 404,"msg" => "参数错误"));
+        }
     }
 
     //酒景

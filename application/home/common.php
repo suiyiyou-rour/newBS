@@ -2,19 +2,14 @@
 
 /**
  * 获取商户id
- * 填充至3位
  */
 function getSpId(){
     $id = session("sp.id");
-    if(strlen($id) < 3){
-        return str_pad($id,3,"0",STR_PAD_LEFT);
-    };
     return $id;
 }
 
 /**
  * 获取商户code
- * 填充至3位
  */
 function getSpCode(){
     $code = session("sp.code");
@@ -27,8 +22,22 @@ function getSpCode(){
  */
 function createGoodsCode($type = "x")
 {
-    $goods_code = $type . getSpId() .mt_rand(100000,999999);
-//    $goods_code =$type . getSpId() . time() .mt_rand(10,99);
+    //商品表id 小于4位填充
+    $goodsId = db("goods")->order("id desc")->value('id');
+    $goodsId ? $goodsId++ : $goodsId = 1;
+    if( strlen($goodsId) < 4 ){
+        $goodsId = str_pad($goodsId,4,"0",STR_PAD_LEFT);
+    };
+
+    //供应商id 小于4位填充
+    $spId = getSpId();
+    if(strlen($spId) < 3){
+        $spId = str_pad($spId,3,"0",STR_PAD_LEFT);
+    };
+
+    //商品类型 + 供应商id + 商品表id
+    $goods_code = $type . $spId . $goodsId;
+//    $goods_code = $type . getSpId() .mt_rand(100000,999999);
     return $goods_code;
 }
 

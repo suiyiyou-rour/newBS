@@ -85,30 +85,29 @@ class ShowGroup
             $data["tab"] = $this->getGoodsTab($goodsCode);
             $data["goodsCode"] = $goodsCode;
             return json_encode(array("code" => 200,"data" => $data));
-
-        }else{//没有商品code
-            //有 未填完信息
-            $alias = array("syy_goods" => "a","syy_goods_create" => "b");
-            $join = [['syy_goods_create','a.code = b.goods_code']];
-            $where = [
-                "a.check_type"  =>  '0',        //制作中
-                "a.sp_code"     => "1234567",   //todo 供应商code
-                'a.is_del'      =>  ['<>',"1"]  //未删除
-            ];
-            $goodsField = "a.code,a.inside_title";
-            $createField = "b.tab";
-            $allField = $goodsField.','.$createField;
-            $res = db('goods')->alias($alias)->field($allField)->where($where)->join($join)->order('a.id desc')->select();
-            if($res){
-                foreach ($res as &$k){
-                    $k["tab"] = $k["tab"] + 1;
-                }
-                return json_encode(array("code" => 1,"data" => $res));
-            }else{
-                //没有 未填完信息
-                return json_encode(array("code" => 2));
-            }
         }
+        //没有商品code
+        $alias = array("syy_goods" => "a","syy_goods_create" => "b");
+        $join = [['syy_goods_create','a.code = b.goods_code']];
+        $where = [
+            "a.check_type"  =>  "0",        //制作中
+            "a.goods_type"  =>  "1",        //跟团游
+            "a.sp_code"     =>  getSpCode(), //供应商code
+            "a.is_del"      =>  ["<>","1"]  //未删除
+        ];
+        $goodsField = "a.code,a.inside_title";
+        $createField = "b.tab";
+        $allField = $goodsField.','.$createField;
+        $res = db('goods')->alias($alias)->field($allField)->where($where)->join($join)->order('a.id desc')->select();
+        //有 未填完信息
+        if($res){
+            foreach ($res as &$k){
+                $k["tab"] = $k["tab"] + 1;
+            }
+            return json_encode(array("code" => 1,"data" => $res));
+        }
+        //没有 未填完信息
+        return json_encode(array("code" => 2));
     }
 
     //行程信息 1
