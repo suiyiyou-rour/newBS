@@ -106,3 +106,18 @@ function testGroupPage1(){
     $data["route_info"] = "json";//行程详细  必须
     return $data;
 }
+
+/**
+ * 用cookie设置session有效期
+ * @param   string  $session_id SESSIONID
+ * @param   value   $val        session值
+ * @param   integer $time       有效时间
+ * @return  boolean  
+ */
+function session_expire($session_name,$val,$time=''){
+    session($session_name,$val);
+    if(session($session_name)){
+        $session_id = session_id($session_name);
+        cookie('PHPSESSID',$session_id,$time);
+    }
+}
