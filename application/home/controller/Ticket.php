@@ -57,9 +57,9 @@ class Ticket extends HomeBase
             $where["a.show_title"] = ['like',"%".$show_title."%"];
         }
 
-        $place_name = input("post.place_name");         //景点名称
-        if($place_name){
-            $where["b.place_name"] = ['like',"%".$place_name."%"];
+        $code = input("post.code");         //产品编号
+        if($code){
+            $where["a.code"] = $code;
         }
 
         $check_type = input("post.check_type");        //审核状态
@@ -77,7 +77,7 @@ class Ticket extends HomeBase
 
 
         $join = [['syy_goods_ticket b','a.code = b.goods_code']];
-        $goodsField = "a.code,a.show_title,a.check_type,a.price_type";
+        $goodsField = "a.code,a.show_title,a.check_type,a.price_type,a.sales";
         $groupField = "b.goods_class,b.place_name,b.ticket_type";
         $allField = $goodsField.','.$groupField;
 
@@ -90,16 +90,19 @@ class Ticket extends HomeBase
         $res = db('goods')->alias("a")->field($allField)->where($where)->join($join)->order('a.id desc')->page($page,10)->select();
         foreach ($res as &$k){
             if($k["price_type"] == 1){          //价格日历date
-                $dateArray = db('goods_calendar')->field("MIN(date) as minDate,MAX(date) as maxDate")->where(array("goods_code"=>$k["code"]))->select();
+                $dateArray = db('goods_calendar')->field("MIN(date) as minDate,MAX(date) as maxDate,MIN(plat_price) as plat_price")->where(array("goods_code"=>$k["code"]))->select();
                 if($dateArray){
-                    $k["minDate"] = date("Y-m-d",$dateArray[0]["minDate"]);
-                    $k["maxDate"] = date("Y-m-d",$dateArray[0]["maxDate"]);
+                    //todo 前端不需要区分
+                    $k["begin_date"] = date("Y-m-d",$dateArray[0]["minDate"]);
+                    $k["end_date"] = date("Y-m-d",$dateArray[0]["maxDate"]);
+                    $k["plat_price"] = (float)$dateArray[0]["plat_price"];
                 }
             }else if($k["price_type"] == 2){    //有效期
-                $indateArray = db('goods_indate')->field("begin_date,end_date")->where(array("goods_code"=>$k["code"]))->find();
+                $indateArray = db('goods_indate')->field("begin_date,end_date,plat_price")->where(array("goods_code"=>$k["code"]))->find();
                 if($indateArray){
                     $k["begin_date"] = date("Y-m-d",$indateArray["begin_date"]);
                     $k["end_date"] = date("Y-m-d",$indateArray["end_date"]);
+                    $k["plat_price"] = (float)$indateArray["plat_price"];
                 }
             }
             $k["place_name"] = json_decode($k["place_name"],true);
