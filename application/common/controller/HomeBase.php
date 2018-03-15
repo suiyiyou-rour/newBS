@@ -16,8 +16,7 @@ class HomeBase extends Base
         // 权限控制
         $controller = strtolower( request()->controller() );
 
-        $t = get_class_vars($controller);
-        dump($t);die;
+
         $sp = session('sp');
         if(!empty($sp)){
             if( $controller == 'login' ) return false;
