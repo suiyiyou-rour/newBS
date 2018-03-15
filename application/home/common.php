@@ -42,6 +42,32 @@ function createGoodsCode($type = "x")
 }
 
 /**
+ * 获取酒店h 景点a 餐饮 车队编号
+ */
+function getCode($type = "x")
+{
+
+//    //商品表id 小于4位填充
+//    $goodsId = db("goods")->order("id desc")->value('id');
+//    $goodsId ? $goodsId++ : $goodsId = 1;
+//    if( strlen($goodsId) < 4 ){
+//        $goodsId = str_pad($goodsId,4,"0",STR_PAD_LEFT);
+//    };
+//
+//    //供应商id 小于4位填充
+//    $spId = getSpId();
+//    if(strlen($spId) < 3){
+//        $spId = str_pad($spId,3,"0",STR_PAD_LEFT);
+//    };
+//
+//    //商品类型 + 供应商id + 商品表id
+//    $goods_code = $type . $spId . $goodsId;
+////    $goods_code = $type . getSpId() .mt_rand(100000,999999);
+//    return $goods_code;
+}
+
+
+/**
  * 防止表单重复提交hash值
  */
 function getFromHash(){

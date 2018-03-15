@@ -534,7 +534,6 @@ class AddTicket
         }
     }
 
-
     //更新最后一次编辑时间
     private function lastEditTime($goodsCode){
         $where = [
