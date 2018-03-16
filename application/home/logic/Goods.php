@@ -40,6 +40,11 @@ class Goods
 
     //酒景
     public function scenery($operation,$state){
-        return "scenery";
+        $array = array('Add','Show','Option');
+        if(in_array($operation,$array)){
+            return \think\Loader::model($operation.'Scenery','logic')->dispatcher($state);
+        }else{
+            return json_encode(array("code" => 404,"msg" => "参数错误"));
+        }
     }
 }

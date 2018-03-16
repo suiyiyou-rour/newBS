@@ -16,16 +16,8 @@ class Group extends HomeBase
 
     public function index()
     {
-//        $this->dispatcher();
-        $goodsCode = "g001711314";
-        $tab = db('goods_create')->where(array("goods_code" => $goodsCode))->value('tab');
-        if($tab !== null && $tab < 7){
-            echo 1;
-        }
-        return;
+
     }
-
-
 
     //商品添加
     public function add(){
@@ -34,6 +26,11 @@ class Group extends HomeBase
 
     //商品添加显示
     public function show(){
+        $this->dispatcher();
+    }
+
+    //商品页面选择显示
+    public function option(){
         $this->dispatcher();
     }
 
@@ -133,11 +130,6 @@ class Group extends HomeBase
         echo json_encode(array("code" => 200,"data" => $output));
         return;
 
-    }
-
-    //商品页面选择显示
-    public function option(){
-        $this->dispatcher();
     }
 
     //商品删除

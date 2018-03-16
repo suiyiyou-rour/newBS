@@ -15,6 +15,36 @@ class Scenery extends HomeBase
 
     }
 
+    //商品添加
+    public function add(){
+        $this->dispatcher();
+    }
+
+    //商品添加显示
+    public function show(){
+        $this->dispatcher();
+    }
+
+    //商品页面选择显示
+    public function option(){
+        $this->dispatcher();
+    }
+
+    //分配
+    private function dispatcher(){
+        $request = request();
+        $controller  = ucfirst($request->controller());
+        $action  = ucfirst($request->action());
+        $state = input('state');
+        if($state == null || $state == ""){
+            echo json_encode(array("code" => 404,"msg" => "参数错误404"));
+            return;
+        }
+        $res = \think\Loader::model('Goods','logic')->dispatcher($controller,$action,$state);
+        echo $res;
+    }
+
+
     //添加酒店
     public function addHotel(){
         $data = input("post.");
@@ -140,7 +170,6 @@ class Scenery extends HomeBase
         }
         return json_encode(array("code" => 200,"data"=>array("code"=>$data["code"])));
     }
-
 
     //异步上传图片
     public function imageUpload()
