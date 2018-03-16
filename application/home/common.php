@@ -143,6 +143,17 @@ function testGroupPage1(){
 }
 
 /**
+ * 手机判断/^1\d{10}$/
+ */
+function is_phone($phone){
+    if(preg_match('/^1\d{10}$/',$phone)){
+        return true;
+    }
+    return false;
+}
+
+
+/**
  * 用cookie设置session有效期
  * @param   string  $session_id SESSIONID
  * @param   value   $val        session值
@@ -156,3 +167,4 @@ function session_expire($session_name,$val,$time=''){
         cookie('PHPSESSID',$session_id,$time);
     }
 }
+

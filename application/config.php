@@ -236,4 +236,12 @@ return [
         'var_page'  => 'page',
         'list_rows' => 15,
     ],
+
+    // 阿里云配置
+    'aliyun'               => [
+        // 短信api -- id,secret
+        'sms_accessKeyId'      => 'LTAI4tfw5qzG499J',
+        'sms_accessKeySecret'  => 'F3zIzdabHuUpVGH6XVBLg8EvUyWB89',
+    ],
+    
 ];
