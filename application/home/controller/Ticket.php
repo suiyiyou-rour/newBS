@@ -90,7 +90,7 @@ class Ticket extends HomeBase
         $res = db('goods')->alias("a")->field($allField)->where($where)->join($join)->order('a.id desc')->page($page,10)->select();
         foreach ($res as &$k){
             if($k["price_type"] == 1){          //价格日历date
-                $dateArray = db('goods_calendar')->field("MIN(date) as minDate,MAX(date) as maxDate,MIN(plat_price) as plat_price")->where(array("goods_code"=>$k["code"]))->select();
+                $dateArray = db('ticket_calendar')->field("MIN(date) as minDate,MAX(date) as maxDate,MIN(plat_price) as plat_price")->where(array("goods_code"=>$k["code"]))->select();
                 if($dateArray){
                     //todo 前端不需要区分
                     $k["begin_date"] = date("Y-m-d",$dateArray[0]["minDate"]);
@@ -98,7 +98,7 @@ class Ticket extends HomeBase
                     $k["plat_price"] = (float)$dateArray[0]["plat_price"];
                 }
             }else if($k["price_type"] == 2){    //有效期
-                $indateArray = db('goods_indate')->field("begin_date,end_date,plat_price")->where(array("goods_code"=>$k["code"]))->find();
+                $indateArray = db('ticket_indate')->field("begin_date,end_date,plat_price")->where(array("goods_code"=>$k["code"]))->find();
                 if($indateArray){
                     $k["begin_date"] = date("Y-m-d",$indateArray["begin_date"]);
                     $k["end_date"] = date("Y-m-d",$indateArray["end_date"]);

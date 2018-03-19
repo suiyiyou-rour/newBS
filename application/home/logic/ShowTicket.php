@@ -174,7 +174,7 @@ class ShowTicket
         }
 
         if($output["price_type"] == 1){//1价格日历 2有效期
-            $calendarRes = db('goods_calendar')
+            $calendarRes = db('ticket_calendar')
                 ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date,stock_num,plat_price,settle_price,market_price,sales_num")
                 ->where(array("goods_code" => $goodsCode))
                 ->order("date asc")
@@ -194,7 +194,7 @@ class ShowTicket
             $output["date"] = array();
             $output["stock_num_day"] = 1;
         }else{
-            $indateRes = db('goods_indate')
+            $indateRes = db('ticket_indate')
                 ->field("begin_date,end_date,stock_num as stock_num_day,plat_price,settle_price,market_price")
                 ->where(array("goods_code" => $goodsCode))
                 ->find();
@@ -247,11 +247,11 @@ class ShowTicket
         }
         $where["goods_code"] = $goodsCode;
 
-        $count = db('goods_calendar')->field('id')->where($where)->count();
+        $count = db('ticket_calendar')->field('id')->where($where)->count();
         if(!$count){
             return array("code" => 200,"data" => array("count" => 0));
         }
-        $res = db('goods_calendar')
+        $res = db('ticket_calendar')
             ->field(['id','date'],true)
             ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
             ->where($where)

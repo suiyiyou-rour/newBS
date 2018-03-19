@@ -222,12 +222,12 @@ class AddTicket
         $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
         $ticketRes = db('goods_ticket')->where(array("goods_code" => $goodsCode))->update($ticketData);
 
-        $indateCheck = db('goods_indate')->field("id")->where(array("goods_code" => $goodsCode))->find();
+        $indateCheck = db('ticket_indate')->field("id")->where(array("goods_code" => $goodsCode))->find();
         if($indateCheck){
-            $indateRes = db('goods_indate')->where(array("goods_code" => $goodsCode))->update($indateData);
+            $indateRes = db('ticket_indate')->where(array("goods_code" => $goodsCode))->update($indateData);
         }else{
             $indateData["goods_code"] = $goodsCode;
-            $indateRes = db('goods_indate')->insert($indateData);
+            $indateRes = db('ticket_indate')->insert($indateData);
         }
 
         if ($goodsRes === false) {
@@ -303,16 +303,16 @@ class AddTicket
             $data["plat_price"]     =   $priData["plat_price"]; //价格
             $data["settle_price"]   =   $priData["settle_price"]; //结算价格
             $data["market_price"]   =   $priData["market_price"]; //市场价格
-            $res = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->find();
+            $res = db('ticket_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->find();
             if ($res) {//修改状态
-                $saveRes = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->update($data);
+                $saveRes = db('ticket_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->update($data);
                 if ($saveRes === false) {
                     $bol = false;
                     $error .= $data["date"] . ",";
                 }
             } else {//添加状态
                 $data["goods_code"] = $goodsCode;
-                $AddRes = db('goods_calendar')->insert($data);
+                $AddRes = db('ticket_calendar')->insert($data);
                 if ($AddRes === false) {
                     $bol = false;
                     $error .= $data["date"] . ",";
@@ -513,7 +513,7 @@ class AddTicket
         ];
         $res = db('goods')->field("check_type")->where($where)->find();
         if($res && $res["check_type"] == 0){
-            $calendarType = db('goods_calendar')->field("id")->where(array("goods_code" => $goodsCode))->find();
+            $calendarType = db('ticket_calendar')->field("id")->where(array("goods_code" => $goodsCode))->find();
             if($calendarType){
                 db('goods')->where(array("code" => $goodsCode))->update(array("check_type"=>1));
             }
@@ -528,7 +528,7 @@ class AddTicket
         ];
         $res = db('goods')->field("check_type")->where($where)->find();
         if($res && $res["check_type"] == 0){
-            $indateType = db('goods_indate')->field("id")->where(array("goods_code" => $goodsCode))->find();
+            $indateType = db('ticket_indate')->field("id")->where(array("goods_code" => $goodsCode))->find();
             if($indateType){
                 db('goods')->where(array("code" => $goodsCode))->update(array("check_type"=>1));
             }
