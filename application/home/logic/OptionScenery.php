@@ -16,36 +16,24 @@ class OptionScenery
                 $output = $this->basicInfo();
                 break;
             case '1':
-                //产品概况
-                $output = $this->productStatus();
-                break;
-            case '2':
-                //产品特色添加
+                //打包内容
                 $output = $this->packDetails();
                 break;
-            case '3':
-                //自费项目添加
+            case '2':
+                //套餐信息
                 $output = $this->packageInfo();
                 break;
-            case '4':
-                //费用包含添加
+            case '3':
+                //价格库存
                 $output = $this->ratesInventory();
                 break;
-            case '5':
-                //费用不包含添加
+            case '4':
+                //商品设置
                 $output = $this->productSet();
                 break;
-            case '6':
-                //特殊人群限制添加
+            case '5':
+                //商品信息
                 $output = $this->productInfo();
-                break;
-            case '100':
-                //图片上传
-                $output = $this->imageUpload();
-                break;
-            case '101':
-                //图片删除
-                $output = $this->imageDel();
                 break;
             default:
                 $output = array("code" => 404, "msg" => "参数错误");
@@ -60,11 +48,6 @@ class OptionScenery
         return "basicInfo";
     }
 
-    //产品概况 1
-    public function productStatus()
-    {
-        return "productStatus";
-    }
 
     //打包内容 2
     public function packDetails(){
@@ -86,12 +69,10 @@ class OptionScenery
         return "productSet";
     }
 
-    //商品信息
+    //商品信息 6
     public function productInfo(){
         return "productInfo";
     }
-
-
 
 
 }

@@ -15,6 +15,7 @@ class Index extends HomeBase
         $k =array("id"=>"k","name"=>"k");
         $v =array("name"=>"v","id"=>"x");
         $kk = array_merge($k,$v);
+        echo  1;
         var_dump($kk);
 
     }
