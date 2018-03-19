@@ -88,7 +88,7 @@ class Group extends HomeBase
             //儿童价格
             if($k["child_price_type"] == 0 || $k["child_price_type"] == 1){//无儿童价格 或 和成人同价
                 $calendarField = "MIN(plat_price) as plat_price ,MAX(date) as date,MIN(plat_house_price) as plat_house_price";
-                $priceArray = db('goods_calendar')->field($calendarField)->where($calendarWhere)->select();
+                $priceArray = db('group_calendar')->field($calendarField)->where($calendarWhere)->select();
                 if($priceArray){
                     $k["plat_price"]            = $priceArray[0]["plat_price"] ;        //成人价格
                     $k["date"]                   = $priceArray[0]["date"] ;              //最后团期
@@ -96,7 +96,7 @@ class Group extends HomeBase
                 }
             }else{
                 $calendarField = "MIN(plat_price) as plat_price,MIN(plat_child_price) as plat_child_price,MAX(date) as date,MIN(plat_house_price) as plat_house_price";
-                $priceArray = db('goods_calendar')->field($calendarField)->where($calendarWhere)->select();
+                $priceArray = db('group_calendar')->field($calendarField)->where($calendarWhere)->select();
                 if($priceArray){
                     $k["plat_price"]        = $priceArray[0]["plat_price"] ;       //成人价格
                     $k["date"]               = $priceArray[0]["date"] ;            //最后团期
@@ -115,14 +115,14 @@ class Group extends HomeBase
                 $k["plat_house_price"] = "--";
             }
             $k["date"] = date("Y-m-d",$k["date"]);
-//            $plat_price = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_price > 0')->min('plat_price');
+//            $plat_price = db('group_calendar')->where(array("goods_code" => $k["code"]))->where('plat_price > 0')->min('plat_price');
 //            $plat_price ? $k["plat_price"] = $plat_price : $k["plat_price"] = "--";
-//            $platChildPrice  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_child_price > 0')->min('plat_child_price');
+//            $platChildPrice  = db('group_calendar')->where(array("goods_code" => $k["code"]))->where('plat_child_price > 0')->min('plat_child_price');
 //            $platChildPrice ? $k["plat_child_price"] = $platChildPrice : $k["plat_child_price"] = "--";
             //单房差特殊 有开有关
-//            $platHousePrice  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('plat_house_price > 0')->min('plat_house_price');
+//            $platHousePrice  = db('group_calendar')->where(array("goods_code" => $k["code"]))->where('plat_house_price > 0')->min('plat_house_price');
 //            $platHousePrice ? $k["plat_house_price"] = $platHousePrice : $k["plat_house_price"] = "--";
-//            $date  = db('goods_calendar')->where(array("goods_code" => $k["code"]))->where('date > 0')->max('date');
+//            $date  = db('group_calendar')->where(array("goods_code" => $k["code"]))->where('date > 0')->max('date');
 //            $k["date"] = date("Y-m-d",$date);
         }
         $output["list"]  =  $res;

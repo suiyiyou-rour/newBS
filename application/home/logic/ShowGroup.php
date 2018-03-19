@@ -104,10 +104,10 @@ class ShowGroup
             foreach ($res as &$k){
                 $k["tab"] = $k["tab"] + 1;
             }
-            return json_encode(array("code" => 1,"data" => $res));
+            return json_encode(array("code" => 203,"data" => $res));
         }
         //没有 未填完信息
-        return json_encode(array("code" => 2));
+        return json_encode(array("code" => 202));
     }
 
     //行程信息 1
@@ -321,13 +321,7 @@ class ShowGroup
         if(empty($goodsCode)){
             return json_encode(array("code" => 412,"msg" => "商品号不能为空"));
         }
-//        $res = db('goods_calendar')
-//            ->field("plat_price,FROM_UNIXTIME(date,'%Y-%c-%d') as date")
-//            ->where(array("goods_code" => $goodsCode))
-//            ->order("date asc")
-////            ->order()
-//            ->select();
-        $res = db('goods_calendar')
+        $res = db('group_calendar')
             ->field(['id','date'],true)
             ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
             ->where(array("goods_code" => $goodsCode))
@@ -373,11 +367,11 @@ class ShowGroup
         }
         $where["goods_code"] = $goodsCode;
 
-        $count = db('goods_calendar')->field('id')->where($where)->count();
+        $count = db('group_calendar')->field('id')->where($where)->count();
         if(!$count){
             return json_encode(array("code" => 200,"data" => array("count" => 0)));
         }
-        $res = db('goods_calendar')
+        $res = db('group_calendar')
             ->field(['id','date'],true)
             ->field("FROM_UNIXTIME(date,'%Y-%c-%d') as date")
             ->where($where)

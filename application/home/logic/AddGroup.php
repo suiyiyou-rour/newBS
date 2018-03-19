@@ -385,16 +385,16 @@ class AddGroup
 
         foreach ($dateArray as $k) {
             $data["date"] = strtotime($k);//时间戳;
-            $res = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->find();
+            $res = db('group_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->find();
             if ($res) {//修改状态
-                $saveRes = db('goods_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->update($data);
+                $saveRes = db('group_calendar')->where(array("goods_code" => $goodsCode, "date" => $data["date"]))->update($data);
                 if ($saveRes === false) {
                     $bol = false;
                     $error .= $data["date"] . ",";
                 }
             } else {//添加状态
                 $data["goods_code"] = $goodsCode;
-                $AddRes = db('goods_calendar')->insert($data);
+                $AddRes = db('group_calendar')->insert($data);
                 if ($AddRes === false) {
                     $bol = false;
                     $error .= $data["date"] . ",";
@@ -633,7 +633,7 @@ class AddGroup
         ];
         $res = db('goods')->field("check_type")->where($where)->find();
         if($res && $res["check_type"] == 0){
-            $calendarType = db('goods_calendar')->field("id")->where(array("goods_code" => $goodsCode))->find();
+            $calendarType = db('group_calendar')->field("id")->where(array("goods_code" => $goodsCode))->find();
             if($calendarType){
                 db('goods')->where(array("code" => $goodsCode))->update(array("check_type"=>1));
             }
