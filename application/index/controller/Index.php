@@ -1,10 +1,9 @@
 <?php
 namespace app\index\controller;
 use app\common\controller\Base;
-use \PHPqrcode\Qrcode;
+use PHPqrcode\Qrcode;
 class Index extends Base
 {
-
     /**
      * 二维码测试
      */
