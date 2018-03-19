@@ -11,33 +11,39 @@ class AddScenery
     {
         //需要商品code
         $goodsCode = input('post.goodsCode');
+        if ($state != '0' && $state != '100' && $state != '101') {
+            if (empty($goodsCode)) {
+                return json_encode(array("code" => 412, "msg" => "添加商品，商品号不能为空"));
+            }
+            //是否有写入状态检测
+            $res = $this->checkGoodsType($goodsCode);
+            if ($res !== true) {
+                return json_encode(array("code" => 405, "msg" => $res));
+            }
+        }
         switch ($state) {
             case '0':
                 //基本信息添加
                 $output = $this->basicInfo();
                 break;
             case '1':
-                //产品概况
-                $output = $this->productStatus();
-                break;
-            case '2':
-                //产品特色添加
+                //打包内容
                 $output = $this->packDetails();
                 break;
-            case '3':
-                //自费项目添加
+            case '2':
+                //套餐信息
                 $output = $this->packageInfo();
                 break;
-            case '4':
-                //费用包含添加
+            case '3':
+                //价格库存
                 $output = $this->ratesInventory();
                 break;
-            case '5':
-                //费用不包含添加
+            case '4':
+                //商品设置
                 $output = $this->productSet();
                 break;
-            case '6':
-                //特殊人群限制添加
+            case '5':
+                //商品信息
                 $output = $this->productInfo();
                 break;
             case '100':
@@ -58,41 +64,136 @@ class AddScenery
     //基本信息添加 0
     public function basicInfo()
     {
-        return "basicInfo";
+        //数据验证
+        $data = $this->basicInfoData();
+        $validate = new \app\home\validate\Scenery();
+        $result = $validate->scene('addBasicInfo')->check($data);
+        if (true !== $result) {
+            return array("code" => 405, "msg" => $validate->getError());
+        }
+
+        //主表添加数据
+        $goodsData["sp_code"]       =   session("sp.code");     //供应商编号
+        $goodsData["contact_code"]  =   $data["contact_code"]; //合同编码  （主）必须
+        //副表添加数据
+        $sceneryData["add_type"]            =   $data["goods_class"];          //添加产品类型 0手动
+        $sceneryData["settlement_type"]    =   $data["city"];                  //结算模式 0底价模式
+
+        //有商品号（更新）
+        $goodsCode = input('post.goodsCode');
+        if ($goodsCode) {
+            $goodsRes = db('goods')->where(array("code" => $goodsCode))->update($goodsData);
+            $sceneryRes = db('goods_scenery')->where(array("goods_code" => $goodsCode))->update($sceneryData);
+            if ($goodsRes === false) {
+                return array("code" => 403, "msg" => "保存出错，请稍后再试");
+            }
+            if ($sceneryRes === false) {
+                return array("code" => 403, "msg" => "保存错误，请稍后再试");
+            }
+            return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
+        }
+
+        //没有商品号（保存）
+        $hash = input('post.hash');
+        if (!checkFromHash($hash)) {
+            return array("code" => 405, "msg" => "您表单提交速度过快，请3秒后重试。");
+        }
+        $goodsCode = createGoodsCode("s");                  //产品编号
+        //主表添加数据
+        $goodsData["code"]          =   $goodsCode;        //产品编号
+        $goodsData["create_time"]   =   time();            //创建时间
+        $goodsData["goods_type"]    =   3;                 //酒景
+        //副表
+        $sceneryData["goods_code"]   =   $goodsCode;        //产品编号
+
+        $goodsRes   = db('goods')->insert($goodsData);
+        $sceneryRes = db('goods_scenery')->insert($sceneryData);
+        if ($goodsRes && $sceneryRes) {
+            db('goods_create')->insert(array('goods_code' => $goodsCode));  //插入页码表
+            return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
+        } else {
+            return array("code" => 403, "msg" => "数据保存出错，请再试一次");
+        }
     }
 
-    //产品概况 1
-    public function productStatus()
-    {
-        return "productStatus";
-    }
 
-    //打包内容 2
+    //打包内容 1
     public function packDetails(){
         return "packDetails";
     }
 
-    // 套餐信息 3
+    // 套餐信息 2
     public function packageInfo(){
         return "packageInfo";
     }
 
-    //价格库存 4
+    //价格库存 3
     public function ratesInventory(){
         return "ratesInventory";
     }
 
-    //商品设置 5
+    //商品设置 4
     public function productSet(){
         return "productSet";
     }
 
-    //商品信息
+    //商品信息 5
     public function productInfo(){
         return "productInfo";
     }
 
 
+    //异步上传图片 100
+    private function imageUpload()
+    {
+//        return array("code" => 404,"msg" => "上传大小错误");
+        //todo 商品号
+        $goodsCode = input('post.goodsCode');
+//        return array("code" => 404,"msg" => $goodsCode);
+        $imgLimit = config("imageUpLimit");
+        $file = request()->file('file');
+        if (empty($file)) {
+            return array("code" => 404, "msg" => "参数错误");
+        }
+        $info = $file->validate($imgLimit)->move(ROOT_PATH . 'public' . DS . 'image' . DS . 'group');
+        if ($info) {
+            return array("code" => 200, "data" => array("name" => 'group' . DS . $info->getSaveName(), "goodsCode" => $goodsCode));
+        } else {
+            // 上传失败获取错误信息
+            return array("code" => 404, "msg" => $file->getError());
+        }
+    }
+
+    //图片删除 101
+    private function imageDel()
+    {
+        $name = input("post.name");
+        $goodsCode = input("post.goodsCode");
+        return array("code" => 200, "data" => $name);
+    }
+
+
+    //商品修改状态检测
+    private function checkGoodsType($goodsCode)
+    {
+        $where = array(
+            "code" => $goodsCode,
+            'is_del' => ['<>', "1"]  //未删除
+        );
+        $res = db('goods')->field("check_type")->where($where)->find();
+        if (!$res) {
+            return "没有商品或者商品被删除";
+        }
+        if ($res["check_type"] !== 0 && $res["check_type"] !== 1) {
+            return "商品不在编辑状态";
+        }
+        return true;
+    }
+
+    //基本数据接收
+    private function basicInfoData(){
+        return "";
+    }
 
 
 }

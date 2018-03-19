@@ -22,6 +22,7 @@ class AddTicket
                 return json_encode(array("code" => 405, "msg" => $res));
             }
         }
+
         switch ($state) {
             case '0':
                 //基本信息添加
