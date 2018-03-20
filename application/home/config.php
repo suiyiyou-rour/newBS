@@ -11,5 +11,5 @@ return [
         'ext'=>'jpg,png,gif'
     ],
 
-    'img_url' => 'http://kk.suiyiyou.net/image/',
+    'img_url' => 'http://www.kris1945.com/image/',
 ];

@@ -8,11 +8,11 @@ class HomeBase extends Base
     public function __construct()
     {
         parent::__construct();
-        if(!IS_WIN){
+//        if(!IS_WIN){
             header('Access-Control-Allow-Origin:*');
             header("Access-Control-Allow-Methods", "GET,POST");
-            header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        }
+//            header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Access-Token");//没什么用
+//        }
         // 权限控制
         $controller = strtolower( request()->controller() );
 

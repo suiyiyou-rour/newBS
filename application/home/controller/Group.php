@@ -11,12 +11,15 @@ class Group extends HomeBase
     public function __construct()
     {
         parent::__construct();
+        cookie('test',123456);
 
     }
 
     public function index()
     {
-
+        $res = cookie("test");
+        echo json_encode($res);
+        return;
     }
 
     //商品添加
@@ -167,6 +170,7 @@ class Group extends HomeBase
         }
         $res = \think\Loader::model('Goods','logic')->dispatcher($controller,$action,$state);
         echo $res;
+        return ;
 
     }
 
