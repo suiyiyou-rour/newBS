@@ -17,9 +17,9 @@ class Group extends HomeBase
 
     public function index()
     {
-        $res = cookie("test");
-        echo json_encode($res);
-        return;
+        $sp_code = getSpCode();//供应商code
+        $data = db('hotel')->field("code,name")->where(array("sp_code"=>$sp_code))->select();
+        var_dump($data);
     }
 
     //商品添加

@@ -57,7 +57,7 @@ class AddScenery
             default:
                 $output = array("code" => 404, "msg" => "参数错误");
         }
-//        $this->endOperation($goodsCode,$state);//后置方法
+        $this->endOperation($goodsCode,$state);//后置方法
         return json_encode($output);
     }
 
@@ -65,7 +65,8 @@ class AddScenery
     public function basicInfo()
     {
         //数据验证
-        $data = $this->basicInfoData();
+        $gain = ['contact_code', 'add_type', 'settlement_type','inside_code'];
+        $data = Request::instance()->only($gain, 'post');
         $validate = new \app\home\validate\Scenery();
         $result = $validate->scene('addBasicInfo')->check($data);
         if (true !== $result) {
@@ -75,9 +76,11 @@ class AddScenery
         //主表添加数据
         $goodsData["sp_code"]       =   session("sp.code");     //供应商编号
         $goodsData["contact_code"]  =   $data["contact_code"]; //合同编码  （主）必须
+        $goodsData["inside_code"]  =   $data["inside_code"];    //供应商内部编号  （主）必须
+
         //副表添加数据
-        $sceneryData["add_type"]            =   $data["goods_class"];          //添加产品类型 0手动
-        $sceneryData["settlement_type"]    =   $data["city"];                  //结算模式 0底价模式
+        $sceneryData["add_type"]            =   $data["add_type"];          //添加产品类型 0手动
+        $sceneryData["settlement_type"]    =   $data["settlement_type"];   //结算模式 0底价模式
 
         //有商品号（更新）
         $goodsCode = input('post.goodsCode');
@@ -105,10 +108,14 @@ class AddScenery
         $goodsData["goods_type"]    =   3;                 //酒景
         //副表
         $sceneryData["goods_code"]   =   $goodsCode;        //产品编号
+        //补充表
+        $supplyData["goods_code"]   =   $goodsCode;         //产品编号
 
-        $goodsRes   = db('goods')->insert($goodsData);
-        $sceneryRes = db('goods_scenery')->insert($sceneryData);
-        if ($goodsRes && $sceneryRes) {
+        $goodsRes   = db('goods')->insert($goodsData);      //主表
+        $sceneryRes = db('goods_scenery')->insert($sceneryData);//副表
+        $supplyRes = db('goods_supply')->insert($supplyData);//补充表
+
+        if ($goodsRes && $sceneryRes && $supplyRes) {
             db('goods_create')->insert(array('goods_code' => $goodsCode));  //插入页码表
             return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
         } else {
@@ -119,7 +126,19 @@ class AddScenery
 
     //打包内容 1
     public function packDetails(){
-        return "packDetails";
+        $goodsCode = input('post.goodsCode');
+        $data = $this->packDetailsData();       //数据接收
+
+        $validate = new \app\home\validate\Scenery();
+        $result = $validate->scene('addPackDetails')->check($data);
+        if (true !== $result) {
+            return array("code" => 405, "msg" => $validate->getError());
+        }
+        $sceneryRes = db('goods_scenery')->where(array("goods_code" => $goodsCode))->update($data);
+        if ($sceneryRes === false) {
+            return array("code" => 403, "msg" => "保存出错，请稍后再试");
+        }
+        return array("code" => 200, "data" => array("goodsCode" => $goodsCode));
     }
 
     // 套餐信息 2
@@ -148,6 +167,7 @@ class AddScenery
 //        if (true !== $result) {
 //            return array("code" => 405, "msg" => $validate->getError());
 //        }
+        return "productSet";
     }
 
     //商品信息 5
@@ -185,6 +205,38 @@ class AddScenery
         return array("code" => 200, "data" => $name);
     }
 
+    //打包内容数据 1
+    private function packDetailsData(){
+        $gain = ['hotel_code', 'view_code', 'meal_code','vehicle_code'];
+        $data = Request::instance()->only($gain, 'post');
+        if(empty($data['hotel_code'])){
+            $data['hotel_code'] = "";
+        }
+        if(empty($data['view_code'])){
+            $data['view_code'] = "";
+        }
+        if(empty($data['meal_code'])){
+            $data['meal_code'] = "";
+        }
+        if(empty($data['vehicle_code'])){
+            $data['vehicle_code'] = "";
+        }
+        $data["hotel_code"] = json_encode($data["hotel_code"]);
+        $data["view_code"] = json_encode($data["view_code"]);
+        $data["meal_code"] = json_encode($data["meal_code"]);
+        $data["vehicle_code"] = json_encode($data["vehicle_code"]);
+        return $data;
+
+    }
+
+
+
+
+
+
+
+
+
 
     //商品修改状态检测
     private function checkGoodsType($goodsCode)
@@ -203,9 +255,31 @@ class AddScenery
         return true;
     }
 
-    //基本数据接收
-    private function basicInfoData(){
-        return "";
+    //后置方法 步骤操作结束后完成的事
+    private function endOperation($goodsCode,$state){
+        $this->lastEditTime($goodsCode);//更新时间
+        $tab = db('goods_create')->where(array("goods_code" => $goodsCode))->value('tab');
+        if($tab !== null && $tab < 5){
+            //更新tab
+            if($state == 1){
+                if ($tab < 1) {
+                    db('goods_create')->where(array("goods_code" => $goodsCode))->update(array("tab" => 1));
+                };
+            }
+        }
+    }
+
+    //更新最后一次编辑时间
+    private function lastEditTime($goodsCode){
+        $where = [
+            "code"              => $goodsCode,
+            "is_del"            =>  ['<>',"1"],  //未删除
+        ];
+        $res = db('goods')->field("id")->where($where)->find();
+        if($res){
+            $data["last_edit_time"] = time();
+            db('goods')->where(array("code" => $goodsCode))->update($data);
+        }
     }
 
 

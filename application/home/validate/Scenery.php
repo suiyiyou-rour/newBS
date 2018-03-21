@@ -9,6 +9,12 @@ class Scenery extends Validate
         'contact_code'              =>   'require|max:11',          //合同编码      （主）必须
         'add_type'                  =>   'require|max:1|number',    //添加产品类型  （副）必须
         'settlement_type'           =>   'require|max:1|number',   //结算模式      （副）必须
+        'inside_code'               =>   'require|max:24',          //供应商产品内部编号      （主）必须
+        //打包内容 1
+        'hotel_code'                 =>   'require|max:128',          //酒店表 code      （副）必须
+        'view_code'                  =>   'max:512',                    //景点表 code  （副）
+        'meal_code'                  =>   'max:512',                    //餐饮表 code  （副）
+        'vehicle_code'               =>   'max:512',                    //车辆表 code  （副）
         //套餐信息 2
         'hotel_day'                 =>   'require|max:2|number',    //酒店天数      （副）必须
         'apply_type'                =>   'require|max:24',          //酒店适用人数  （副）必须
@@ -44,6 +50,14 @@ class Scenery extends Validate
         'settlement_type.require'       => '结算模式是必须选择的',
         'settlement_type.max'           => '结算模式类型格式错误',
         'settlement_type.number'        => '结算模式类型格式错误',
+        'inside_code.require'          => '供应商产品内部编号是必须的',
+        'inside_code.max'              => '供应商产品内部编号不能超过24个字符',
+        //打包内容
+        'hotel_code.require'          => '酒店列表最少要有一个',
+        'hotel_code.max'              => '酒店列表长度不符合规范，请及时联系管理员小游',
+        'view_code.max'               => '景点列表长度不符合规范，请及时联系管理员小游',
+        'meal_code.max'              => '餐饮列表长度不符合规范，请及时联系管理员小游',
+        'vehicle_code.max'               => '车辆列表长度不符合规范，请及时联系管理员小游',
         //套餐信息 2
         'hotel_day.require'             => '酒店天数是必须的',
         'hotel_day.max'                 => '酒店天数不能大于99天',
@@ -87,7 +101,9 @@ class Scenery extends Validate
     //定义场景
     protected $scene = [
         //基本信息添加 0
-        'addBasicInfo'   =>  ['contact_code', 'add_type', 'settlement_type'],
+        'addBasicInfo'   =>  ['contact_code', 'add_type', 'settlement_type','inside_code'],
+        //打包内容 1 todo 以后验证code
+        'addPackDetails' =>  ['hotel_code', 'view_code', 'meal_code','vehicle_code'],
         //套餐信息 2
         'addPackageInfo' =>  ['hotel_day', 'apply_type', 'show_market_price','trip_info'],
         //商品设置 4
