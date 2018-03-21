@@ -9,7 +9,7 @@ use app\common\controller\HomeBase;
 class Login extends HomeBase
 {   
     /**
-     * 后台登录
+     * 后台登录 /etc/nginx/conf.d/
      */ 
     public function login(){
         $account = input('post.account');

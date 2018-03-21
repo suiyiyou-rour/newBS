@@ -125,6 +125,13 @@ class AddScenery
     // 套餐信息 2
     public function packageInfo(){
         return "packageInfo";
+        //数据验证
+//        $data = $this->packageInfoData();
+//        $validate = new \app\home\validate\Scenery();
+//        $result = $validate->scene('addPackageInfo')->check($data);
+//        if (true !== $result) {
+//            return array("code" => 405, "msg" => $validate->getError());
+//        }
     }
 
     //价格库存 3
@@ -134,7 +141,13 @@ class AddScenery
 
     //商品设置 4
     public function productSet(){
-        return "productSet";
+        //数据验证
+//        $data = $this->packageInfoData();
+//        $validate = new \app\home\validate\Scenery();
+//        $result = $validate->scene('addProductInfo')->check($data);
+//        if (true !== $result) {
+//            return array("code" => 405, "msg" => $validate->getError());
+//        }
     }
 
     //商品信息 5
