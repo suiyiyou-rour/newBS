@@ -9,6 +9,7 @@ class HomeBase extends Base
     {
         parent::__construct();
 //        if(!IS_WIN){
+<<<<<<< HEAD
             $origin = isset($_SERVER['HTTP_ORIGIN'])? $_SERVER['HTTP_ORIGIN'] : ''; 
         
             $allow_origin = array( 
@@ -24,6 +25,12 @@ class HomeBase extends Base
                 cookie(['domain' => $origin]);
             }
             // header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Access-Token");//没什么用
+=======
+        header("Access-Control-Allow-Origin:*");
+        header("Access-Control-Request-Method:GET,POST");
+//        header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Access-Token");//没什么用
+
+>>>>>>> c1f3f2ddd15a229e8e0952cee5e33bac5a94b55b
 //        }
         // 权限控制
         $controller = strtolower( request()->controller() );
