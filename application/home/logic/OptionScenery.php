@@ -56,7 +56,7 @@ class OptionScenery
     }
 
 
-    //打包内容 2
+    //打包内容 1
     public function packDetails(){
         $sp_code = getSpCode();//供应商code
         $data["hotel"] = db('hotel')->field("code,name")->where(array("sp_code"=>$sp_code))->select();
@@ -78,24 +78,44 @@ class OptionScenery
         return array("code" => 200,"data" => $data);
     }
 
-    // 套餐信息 3
+    // 套餐信息 2
     public function packageInfo(){
-        return "packageInfo";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return json_encode(array("code" => 404,"msg" => "查询商品号不能为空"));
+        }
+        $output = db('goods_scenery')->field('hotel_code')->where(array("goods_code"=> $goodsCode))->find();
+        if(empty($output)){
+            return array("code" => 404,"msg" => "查询错误");
+        }
+        $output["hotel_code"] = json_decode($output["hotel_code"],true);
+        return array("code" => 200,"data" => $output);
     }
 
-    //价格库存 4
+    //价格库存 3
     public function ratesInventory(){
         return "ratesInventory";
     }
 
-    //商品设置 5
+    //商品设置 4
     public function productSet(){
         return "productSet";
     }
 
-    //商品信息 6
+    //商品信息 5
     public function productInfo(){
-        return "productInfo";
+        $goodsCode = input('post.goodsCode');
+        if(empty($goodsCode)){
+            return array("code" => 404,"msg" => "查询商品号不能为空");
+        }
+        $output = db('goods_scenery')->field('hotel_code,hotel_day,view_code,meal_code')->where(array("goods_code"=> $goodsCode))->find();
+        if(empty($output)){
+            return array("code" => 404,"msg" => "查询错误");
+        }
+        $output["hotel_code"] = json_decode($output["hotel_code"],true);
+        $output["view_code"] = json_decode($output["view_code"],true);
+        $output["meal_code"] = json_decode($output["meal_code"],true);
+        return array("code" => 200,"data" => $output);
     }
 
 

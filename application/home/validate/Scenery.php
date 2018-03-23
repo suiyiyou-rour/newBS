@@ -17,7 +17,8 @@ class Scenery extends Validate
         'vehicle_code'               =>   'max:512',                    //车辆表 code  （副）
         //套餐信息 2
         'hotel_day'                 =>   'require|max:2|number',    //酒店天数      （副）必须
-        'apply_type'                =>   'require|max:24',          //酒店适用人数  （副）必须
+        'apply_man_num'             =>   'require|max:2|number',    //适用成人人数  （副）必须
+        'apply_child_num'           =>   'require|max:2|number',    //适用儿童人数  （副）必须
         'show_market_price'         =>   'require|number|between:0,999999',   //展示用的市场价格  （副）必须
         'trip_info'                 =>   'require',                  //行程信息      （副）必须
         //商品设置 4
@@ -27,14 +28,17 @@ class Scenery extends Validate
         'max_buy_is_open'           =>  'require|max:1|number',     //最大购买限制  （副）必须
         'max_buy_num'               =>  'max:4|number',              //最多购买人数  （副）
         'refund'                    =>  'require|max:1|number',     //退款设置  （副）必须
-        'refund_info'               =>  'require|max:128',          //退款说明  （副） 必须
+        'refund_info'               =>  'max:128',                   //退款说明  （副）
         'contact_info'              =>  'require|max:128',          //联系人信息  （副）必须
         'play_people_info'          =>  'require|max:128',          //游玩人信息  （副）必须
         'friendship_hints'          =>  'require',                  //友情提示  （副）必须
         'book_notice'               =>  'require',                  //使用说明  （副）必须
-
-
-
+        //商品信息 5
+        'show_title'                =>  'require|max:56',           //商品标题  （主）必须
+        'on_time'                   =>  'require|max:11|number',   //上线时间  （主）必须
+        'off_time'                  =>  'require|max:11|number',  //下线时间  （主）必须
+        'recommend_account'        =>  'require',                  //推荐理由 （副）必须
+        'class_label'               =>  'require',                 //目类标签  （副）必须
 
 
     ];
@@ -62,8 +66,12 @@ class Scenery extends Validate
         'hotel_day.require'             => '酒店天数是必须的',
         'hotel_day.max'                 => '酒店天数不能大于99天',
         'hotel_day.number'              => '酒店天数必须是数字',
-        'apply_type.require'            => '酒店适用人数是必须的',
-        'apply_type.max'                => '酒店适用人数格式错误',
+        'apply_man_num.require'        => '适用成人人数是必须的',
+        'apply_man_num.max'             => '适用成人人数不能大于99',
+        'apply_man_num.number'          => '适用成人人数必须是数字',
+        'apply_child_num.require'       => '适用儿童人数是必须的',
+        'apply_child_num.max'           => '适用儿童人数不能大于99',
+        'apply_child_num.number'        => '适用儿童人数必须是数字',
         'show_market_price.require'    => '市场价是必须的',
         'show_market_price.number'     => '市场价必须是数字',
         'show_market_price.between'    => '市场价不能大于999999',
@@ -85,7 +93,6 @@ class Scenery extends Validate
         'refund.require'                => '退款设置是必须的',
         'refund.max'                    => '退款设置格式错误',
         'refund.number'                 => '退款设置格式错误',
-        'refund_info.require'          => '退款说明是必须的',
         'refund_info.max'               => '退款说明不能超过128个字符',
         'contact_info.require'          => '联系人信息是必须的',
         'contact_info.max'              => '联系人信息格式错误',
@@ -93,9 +100,17 @@ class Scenery extends Validate
         'play_people_info.max'          => '游玩人信息格式错误',
         'friendship_hints.require'      => '友情提示是必须的',
         'book_notice.require'           => '使用说明是必须的',
-
-
-
+        //商品信息 5
+        'show_title.require'            => '商品标题是必须的',
+        'show_title.max'                => '商品标题不能超过56个字符',
+        'on_time.require'               => '上线时间是必须的',
+        'on_time.max'                   => '上线时间格式错误',
+        'on_time.number'                => '上线时间格式错误',
+        'off_time.require'               => '下线时间是必须的',
+        'off_time.max'                   => '下线时间格式错误',
+        'off_time.number'                => '下线时间格式错误',
+        'recommend_account.require'     => '推荐理由是必须的',
+        'class_label.require'            => '目类标签是必须的',
     ];
 
     //定义场景
@@ -105,12 +120,11 @@ class Scenery extends Validate
         //打包内容 1 todo 以后验证code
         'addPackDetails' =>  ['hotel_code', 'view_code', 'meal_code','vehicle_code'],
         //套餐信息 2
-        'addPackageInfo' =>  ['hotel_day', 'apply_type', 'show_market_price','trip_info'],
+        'addPackageInfo' =>  ['hotel_day', 'apply_man_num', 'apply_child_num', 'show_market_price','trip_info'],
         //商品设置 4
-        'addProductInfo' =>  ['advance_time','stock_confirm_time','min_buy_num','max_buy_is_open','max_buy_num', 'refund','refund_info','contact_info','play_people_info','friendship_hints','book_notice'],
-
-
-
+        'addProductSet'  =>  ['advance_time','stock_confirm_time','min_buy_num','max_buy_is_open','max_buy_num', 'refund','refund_info','contact_info','play_people_info','friendship_hints','book_notice'],
+        //商品信息 5
+        'addProductInfo' =>  ['show_title', 'on_time', 'off_time','recommend_account','class_label'],
     ];
 
 

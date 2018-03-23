@@ -17,9 +17,41 @@ class Group extends HomeBase
 
     public function index()
     {
-        $sp_code = getSpCode();//供应商code
-        $data = db('hotel')->field("code,name")->where(array("sp_code"=>$sp_code))->select();
-        var_dump($data);
+        $goodsCode = 's0010002';
+
+        $goodsField = "a.show_title,a.on_time,a.off_time";
+        $ticketField = "b.recommend_account,b.class_label";
+        $supplyField = "c.image";
+        $allField = $goodsField.','.$ticketField.','.$supplyField;
+        $join = [
+            ['goods_scenery b','a.code = b.goods_code'],
+            ['syy_goods_supply c','a.code = c.goods_code']
+        ];
+        $where = [
+            "a.code"         => $goodsCode,
+            "a.goods_type"  => 3,
+            "a.is_del"       =>  ["<>","1"]  //未删除
+        ];
+        $data = db('goods')->alias("a")->join($join)->field($allField)->where($where)->find();
+        if(!$data){
+            echo 1;
+        }
+
+        $data["recommend_account"] = json_decode($data["recommend_account"],true);
+        $data["class_label"] = json_decode($data["class_label"],true);
+        //图片处理
+        $imgArray = json_decode($data["image"],true);
+        $data["fileList"] = array();
+        foreach ($imgArray as $k){
+            $newArray = [
+                "name"  => $k ,
+                "url"  => config("img_url") . $k ,
+                "status"  => "success" ,
+            ];
+            $data["fileList"][] = $newArray;
+        }
+       var_dump($data);
+
     }
 
     //商品添加
