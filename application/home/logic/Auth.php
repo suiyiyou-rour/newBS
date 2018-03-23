@@ -23,7 +23,7 @@ class Auth
 
         // 菜单数据重构
         $data = $this->recombinData($data);
-        return  array('code' => 200, 'msg' => $data);
+        return  array('code' => 200, 'data' => $data);
     }
 
     /**

@@ -9,11 +9,11 @@ use app\common\controller\HomeBase;
 class Login extends HomeBase
 {   
     /**
-     * 后台登录
+     * 后台登录 /etc/nginx/conf.d/
      */ 
     public function login(){
         $account = input('post.account');
-        $password = input('post.password');
+        $password = md5(input('post.password'));
         //$remember = input('remember');
         // 参数 合法性校验
         if($account == '' || $account == null || $password == '' || $password == null){
@@ -22,7 +22,7 @@ class Login extends HomeBase
         // 密码账号的正确性  -- 超管 分销商
         $data = db('sp')
                 ->field(['id','code','type','account_num','com_name','open'])
-                ->where(array('account_num' => $account,'pwd' => md5($password)))
+                ->where(array('account_num' => $account,'pwd' => $password))
                 ->where('type','in','0,1')
                 ->find();
         if(empty($data)){
@@ -42,7 +42,7 @@ class Login extends HomeBase
         // 记录
         session_expire('sp',array('id' => $data['id'], 'code' => $data['code']),60*60*24*7);
         cookie('menu',$menu);
-        return json(array('code' => 200,'msg' => '登录成功'));
+        return json(array('code' => 200,'msg' => '登录成功','data' => $menu));
     }
 
     /**
