@@ -363,10 +363,6 @@ class AddScenery
 
 
 
-
-
-
-
     //处理图片数组(前端对象转字符串)
     private function imageSetStr($imageObj){
         $fileList = objSetArray($imageObj);
